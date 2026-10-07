@@ -153,7 +153,7 @@ internal class AppUpdateNotifier(private val context: Context) {
 
             clearActions()
             addAction(
-                R.drawable.ic_refresh_24dp,
+                R.drawable.ic_lightning_24dp,
                 context.stringResource(MR.strings.action_retry),
                 NotificationReceiver.downloadAppUpdatePendingBroadcast(context, url),
             )

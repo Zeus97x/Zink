@@ -69,8 +69,6 @@ data object MoreTab : Tab {
             downloadQueueStateProvider = { downloadQueueState },
             downloadedOnly = screenModel.downloadedOnly,
             onDownloadedOnlyChange = { screenModel.downloadedOnly = it },
-            incognitoMode = screenModel.incognitoMode,
-            onIncognitoModeChange = { screenModel.incognitoMode = it },
             // SY -->
             showNavUpdates = screenModel.showNavUpdates,
             showNavHistory = screenModel.showNavHistory,
@@ -99,7 +97,6 @@ private class MoreScreenModel(
 ) : ScreenModel {
 
     var downloadedOnly by preferences.downloadedOnly.asState(screenModelScope)
-    var incognitoMode by preferences.incognitoMode.asState(screenModelScope)
 
     // SY -->
     val showNavUpdates by uiPreferences.showNavUpdates.asState(screenModelScope)

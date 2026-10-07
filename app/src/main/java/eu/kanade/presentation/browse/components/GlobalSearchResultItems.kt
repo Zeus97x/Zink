@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.Error
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -25,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import tachiyomi.i18n.MR
+import tachiyomi.presentation.core.components.LightningProgressIndicator
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -85,11 +85,10 @@ fun GlobalSearchLoadingResultItem() {
             .fillMaxWidth()
             .padding(vertical = MaterialTheme.padding.medium),
     ) {
-        CircularProgressIndicator(
+        LightningProgressIndicator(
             modifier = Modifier
                 .size(16.dp)
                 .align(Alignment.Center),
-            strokeWidth = 2.dp,
         )
     }
 }

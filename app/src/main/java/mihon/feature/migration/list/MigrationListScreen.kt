@@ -52,7 +52,8 @@ class MigrationListScreen(private val mangaIds: Collection<Long>, private val ex
             }
         }
         MigrationListScreenContent(
-            items = state.items,
+            items = state.loadedItems,
+            canLoadMore = state.canLoadMore,
             migrationComplete = state.migrationComplete,
             finishedCount = state.finishedCount,
             onItemClick = {
@@ -61,9 +62,11 @@ class MigrationListScreen(private val mangaIds: Collection<Long>, private val ex
             onSearchManually = { migrationItem ->
                 navigator push MigrateSearchScreen(migrationItem.manga.id)
             },
+            onRetry = { screenModel.retryManga(it) },
             onSkip = { screenModel.removeManga(it) },
             onMigrate = { screenModel.migrateNow(mangaId = it, replace = true) },
             onCopy = { screenModel.migrateNow(mangaId = it, replace = false) },
+            onLoadMore = screenModel::loadNextBatch,
             openMigrationDialog = screenModel::showMigrateDialog,
         )
 

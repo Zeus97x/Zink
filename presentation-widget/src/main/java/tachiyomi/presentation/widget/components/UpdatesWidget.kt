@@ -5,11 +5,13 @@ import android.graphics.Bitmap
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.glance.ColorFilter
 import androidx.glance.GlanceModifier
+import androidx.glance.Image
+import androidx.glance.ImageProvider
 import androidx.glance.LocalContext
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.CircularProgressIndicator
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
@@ -18,12 +20,14 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
+import androidx.glance.layout.size
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import tachiyomi.core.common.Constants
 import tachiyomi.i18n.MR
 import tachiyomi.presentation.core.i18n.stringResource
+import tachiyomi.presentation.widget.R
 import tachiyomi.presentation.widget.util.calculateRowAndColumnCount
 
 @Composable
@@ -39,7 +43,12 @@ fun UpdatesWidget(
         modifier = modifier,
     ) {
         if (data == null) {
-            CircularProgressIndicator(color = contentColor)
+            Image(
+                provider = ImageProvider(R.drawable.ic_widget_lightning_24dp),
+                contentDescription = stringResource(MR.strings.loading),
+                modifier = GlanceModifier.size(40.dp),
+                colorFilter = ColorFilter.tint(contentColor),
+            )
         } else if (data.isEmpty()) {
             Text(
                 text = stringResource(MR.strings.information_no_recent),

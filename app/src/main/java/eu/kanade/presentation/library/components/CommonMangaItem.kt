@@ -79,6 +79,7 @@ fun MangaCompactGridItem(
     coverAlpha: Float = 1f,
     coverBadgeStart: @Composable (RowScope.() -> Unit)? = null,
     coverBadgeEnd: @Composable (RowScope.() -> Unit)? = null,
+    rounded: Boolean = false,
 ) {
     GridItemSelectable(
         isSelected = isSelected,
@@ -86,12 +87,14 @@ fun MangaCompactGridItem(
         onLongClick = onLongClick,
     ) {
         MangaGridCover(
+            modifier = if (rounded) Modifier.clip(RoundedCornerShape(16.dp)) else Modifier,
             cover = {
                 MangaCover.Book(
                     modifier = Modifier
                         .fillMaxWidth()
                         .alpha(if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha),
                     data = coverData,
+                    shape = if (rounded) RoundedCornerShape(16.dp) else MaterialTheme.shapes.extraSmall,
                 )
             },
             badgesStart = coverBadgeStart,
@@ -185,13 +188,20 @@ fun MangaComfortableGridItem(
     coverBadgeStart: (@Composable RowScope.() -> Unit)? = null,
     coverBadgeEnd: (@Composable RowScope.() -> Unit)? = null,
     onClickContinueReading: (() -> Unit)? = null,
+    rounded: Boolean = false,
 ) {
     GridItemSelectable(
         isSelected = isSelected,
         onClick = onClick,
         onLongClick = onLongClick,
     ) {
-        Column {
+        Column(
+            modifier = if (rounded) {
+                Modifier.clip(RoundedCornerShape(20.dp)).background(MaterialTheme.colorScheme.surfaceContainer)
+            } else {
+                Modifier
+            },
+        ) {
             MangaGridCover(
                 cover = {
                     MangaCover.Book(
@@ -199,6 +209,7 @@ fun MangaComfortableGridItem(
                             .fillMaxWidth()
                             .alpha(if (isSelected) GRID_SELECTED_COVER_ALPHA else coverAlpha),
                         data = coverData,
+                        shape = if (rounded) RoundedCornerShape(16.dp) else MaterialTheme.shapes.extraSmall,
                     )
                 },
                 badgesStart = coverBadgeStart,
@@ -220,6 +231,7 @@ fun MangaComfortableGridItem(
                 modifier = Modifier.padding(4.dp),
                 title = title,
                 style = MaterialTheme.typography.titleSmall,
+                fontSize = if (rounded) 14.sp else 12.sp,
                 minLines = 2,
                 maxLines = titleMaxLines,
             )
@@ -272,11 +284,12 @@ private fun GridItemTitle(
     minLines: Int,
     modifier: Modifier = Modifier,
     maxLines: Int = 2,
+    fontSize: androidx.compose.ui.unit.TextUnit = 12.sp,
 ) {
     Text(
         modifier = modifier,
         text = title,
-        fontSize = 12.sp,
+        fontSize = fontSize,
         lineHeight = 18.sp,
         minLines = minLines,
         maxLines = maxLines,
@@ -338,11 +351,23 @@ fun MangaListItem(
     isSelected: Boolean = false,
     coverAlpha: Float = 1f,
     onClickContinueReading: (() -> Unit)? = null,
+    rowHeight: Dp = 56.dp,
+    rounded: Boolean = false,
 ) {
     Row(
         modifier = Modifier
+            .then(
+                if (rounded) {
+                    Modifier
+                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                } else {
+                    Modifier
+                },
+            )
             .selectedBackground(isSelected)
-            .height(56.dp)
+            .height(rowHeight)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick,
@@ -355,6 +380,7 @@ fun MangaListItem(
                 .fillMaxHeight()
                 .alpha(coverAlpha),
             data = coverData,
+            shape = if (rounded) RoundedCornerShape(14.dp) else MaterialTheme.shapes.extraSmall,
         )
         Text(
             text = title,
@@ -363,7 +389,7 @@ fun MangaListItem(
                 .weight(1f),
             maxLines = 2,
             overflow = TextOverflow.Ellipsis,
-            style = MaterialTheme.typography.bodyMedium,
+            style = if (rounded) MaterialTheme.typography.bodyLarge else MaterialTheme.typography.bodyMedium,
         )
         BadgeGroup(content = badge)
         if (onClickContinueReading != null) {

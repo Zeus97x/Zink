@@ -144,6 +144,9 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
 
         val scope = ProcessLifecycleOwner.get().lifecycleScope
 
+        // The global Incognito toggle is removed; restore history tracking on startup.
+        basePreferences.incognitoMode.set(false)
+
         // Show notification to disable Incognito Mode when it's enabled
         basePreferences.incognitoMode.changes()
             .onEach { enabled ->

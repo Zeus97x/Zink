@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,6 +41,7 @@ import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.service.SourceManager
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.LightningProgressIndicator
 import tachiyomi.presentation.core.components.material.Scaffold
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -95,7 +95,7 @@ class InterceptActivity : BaseActivity() {
                             text = stringResource(SYMR.strings.loading_entry),
                             style = MaterialTheme.typography.titleLarge,
                         )
-                        CircularProgressIndicator(modifier = Modifier.size(56.dp))
+                        LightningProgressIndicator(modifier = Modifier.size(56.dp))
                     }
                     is InterceptResult.Success -> Text(
                         text = stringResource(SYMR.strings.launching_app),

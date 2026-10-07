@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +27,7 @@ import eu.kanade.tachiyomi.ui.browse.migration.advanced.process.MigratingManga
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.LightningProgressIndicator
 import tachiyomi.presentation.core.i18n.stringResource
 
 @Composable
@@ -49,7 +49,7 @@ fun MigrationItemResult(
                     .aspectRatio(MangaCover.Book.ratio),
                 contentAlignment = Alignment.Center,
             ) {
-                CircularProgressIndicator()
+                LightningProgressIndicator()
             }
             MigratingManga.SearchResult.NotFound -> Column(
                 Modifier

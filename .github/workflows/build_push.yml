@@ -1,4 +1,6 @@
 name: Release Builder
+permissions:
+  contents: write
 on:
   push:
    branches:
@@ -70,28 +72,28 @@ jobs:
         run: |
           set -e
 
-          mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk TachiyomiSY.apk
-          mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk TachiyomiSY-arm64-v8a.apk
-          mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk TachiyomiSY-armeabi-v7a.apk
-          mv app/build/outputs/apk/release/app-x86-release-unsigned-signed.apk TachiyomiSY-x86.apk
-          mv app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk TachiyomiSY-x86_64.apk
+          mv app/build/outputs/apk/release/app-universal-release-unsigned-signed.apk Zink.apk
+          mv app/build/outputs/apk/release/app-arm64-v8a-release-unsigned-signed.apk Zink-arm64-v8a.apk
+          mv app/build/outputs/apk/release/app-armeabi-v7a-release-unsigned-signed.apk Zink-armeabi-v7a.apk
+          mv app/build/outputs/apk/release/app-x86-release-unsigned-signed.apk Zink-x86.apk
+          mv app/build/outputs/apk/release/app-x86_64-release-unsigned-signed.apk Zink-x86_64.apk
 
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.run_number }}
-          name: TachiyomiSY
+          name: Zink
           body: |
             <!-->
             > [!TIP]
             >
-            > ### If you are unsure which version to download then go with `TachiyomiSY.apk`
+            > ### If you are unsure which version to download then go with `Zink.apk`
           files: |
-            TachiyomiSY.apk
-            TachiyomiSY-arm64-v8a.apk
-            TachiyomiSY-armeabi-v7a.apk
-            TachiyomiSY-x86.apk
-            TachiyomiSY-x86_64.apk
+            Zink.apk
+            Zink-arm64-v8a.apk
+            Zink-armeabi-v7a.apk
+            Zink-x86.apk
+            Zink-x86_64.apk
           draft: true
           prerelease: false
         env:

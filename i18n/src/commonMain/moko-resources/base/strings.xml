@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">TachiyomiSY</string>
+    <string name="app_name" translatable="false">Zink</string>
 
     <!-- Generic strings -->
     <string name="on">On</string>
@@ -1039,7 +1039,6 @@
     <string name="migrationListScreen.skipActionLabel">Don\'t migrate</string>
     <string name="migrationListScreen.migrateNowActionLabel">Migrate now</string>
     <string name="migrationListScreen.copyNowActionLabel">Copy now</string>
-    <string name="migrationListScreen.copyNowActionLabel">Copy now</string>
     <string name="migrationListScreen.exitDialogTitle">Stop migrating?</string>
     <string name="migrationListScreen.exitDialog.stopLabel">Stop</string>
     <string name="migrationListScreen.exitDialog.cancelLabel">Cancel</string>
@@ -1048,4 +1047,20 @@
     <string name="migrationListScreen.migrateDialog.cancelLabel">Cancel</string>
     <string name="migrationListScreen.progressDialog.cancelLabel">Cancel</string>
     <string name="migrationListScreen.matchWithoutChapterToast">No chapters found, this entry cannot be used for migration</string>
+    <string name="zink_delete_duplicates">Delete duplicates</string>
+    <string name="zink_card_size">Card size</string>
+    <string name="zink_card_compact">Compact</string>
+    <string name="zink_card_comfortable">Comfortable</string>
+    <string name="zink_card_large">Large</string>
+    <string name="zink_library_loading">Loading library</string>
+    <string name="zink_library_empty">Your library is empty</string>
+    <string name="zink_duplicates_empty">No duplicate titles found</string>
+    <string name="zink_library_load_error">Unable to load library</string>
+    <string name="zink_duplicate_remove_error">Unable to remove title. Try again.</string>
+    <string name="zink_chapter_progress">%1$d read / %2$d chapters</string>
+    <string name="zink_load_ten_more">Load 10 more</string>
+    <string name="zink_unfound_migrations">Unfound migrations</string>
+    <string name="zink_migrate_selected">Migrate %1$d titles</string>
+    <string name="zink_remove_duplicate_title">Remove duplicate?</string>
+    <string name="zink_remove_duplicate_message">Remove “%1$s” from %2$s from your library? Downloads and reading history will be kept.</string>
 </resources>

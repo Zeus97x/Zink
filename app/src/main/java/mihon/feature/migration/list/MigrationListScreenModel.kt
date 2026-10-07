@@ -51,7 +51,10 @@ class MigrationListScreenModel(
     private val updateMangaFromRemote: UpdateMangaFromRemote = Injekt.get(),
 ) : StateScreenModel<MigrationListScreenModel.State>(State()) {
 
-    private val smartSearchEngine = SmartSourceSearchEngine(extraSearchQuery)
+    private val smartSearchEngine = SmartSourceSearchEngine(
+        extraSearchParams = extraSearchQuery,
+        eligibleThreshold = MIN_STRICT_MATCH_THRESHOLD,
+    )
 
     // SY -->
     private val throttleManager = ThrottleManager()
@@ -60,13 +63,13 @@ class MigrationListScreenModel(
     val items
         inline get() = state.value.items
 
-    private val hideUnmatched = preferences.migrationHideUnmatched.get()
     private val hideWithoutUpdates = preferences.migrationHideWithoutUpdates.get()
 
     private val navigateBackChannel = Channel<Unit>()
     val navigateBackEvent = navigateBackChannel.receiveAsFlow()
 
     private var migrateJob: Job? = null
+    private var searchJob: Job? = null
 
     init {
         screenModelScope.launchIO {
@@ -86,8 +89,19 @@ class MigrationListScreenModel(
                 }
                 .awaitAll()
                 .filterNotNull()
-            mutableState.update { it.copy(items = manga) }
-            runMigrations(manga)
+            mutableState.update {
+                it.copy(
+                    items = manga,
+                    loadedCount = manga.size.coerceAtMost(MIGRATION_BATCH_SIZE),
+                )
+            }
+            searchJob = screenModelScope.launchIO {
+                try {
+                    runMigrations(manga.take(MIGRATION_BATCH_SIZE))
+                } finally {
+                    searchJob = null
+                }
+            }
         }
     }
 
@@ -164,9 +178,8 @@ class MigrationListScreenModel(
 
             manga.searchResult.value = result?.first?.toSuccessSearchResult() ?: SearchResult.NotFound
 
-            if (result == null && hideUnmatched) {
-                removeManga(manga)
-            }
+            // Keep unmatched titles visible so they can be retried or matched manually from
+            // the dedicated Unfound migrations section.
             if (result != null &&
                 hideWithoutUpdates &&
                 (result.second.latestChapter ?: 0.0) <= (manga.latestChapter ?: 0.0)
@@ -214,8 +227,9 @@ class MigrationListScreenModel(
 
     private suspend fun updateMigrationProgress() {
         mutableState.update { state ->
+            val loadedItems = state.loadedItems
             state.copy(
-                finishedCount = items.count { it.searchResult.value != SearchResult.Searching },
+                finishedCount = loadedItems.count { it.searchResult.value != SearchResult.Searching },
                 migrationComplete = migrationComplete(),
             )
         }
@@ -224,8 +238,46 @@ class MigrationListScreenModel(
         }
     }
 
-    private fun migrationComplete() = items.all { it.searchResult.value != SearchResult.Searching } &&
-        items.any { it.searchResult.value is SearchResult.Success }
+    private fun migrationComplete(): Boolean {
+        val loadedItems = state.value.loadedItems
+        return loadedItems.isNotEmpty() &&
+            loadedItems.all { it.searchResult.value != SearchResult.Searching } &&
+            loadedItems.any { it.searchResult.value is SearchResult.Success }
+    }
+
+    fun loadNextBatch() {
+        if (searchJob?.isActive == true || migrateJob?.isActive == true) return
+
+        val state = state.value
+        if (!state.canLoadMore) return
+
+        val nextLoadedCount = (state.loadedCount + MIGRATION_BATCH_SIZE).coerceAtMost(state.items.size)
+        val batch = state.items.subList(state.loadedCount, nextLoadedCount)
+
+        mutableState.update { it.copy(loadedCount = nextLoadedCount, migrationComplete = false) }
+        searchJob = screenModelScope.launchIO {
+            try {
+                runMigrations(batch)
+            } finally {
+                searchJob = null
+            }
+        }
+    }
+
+    fun retryManga(mangaId: Long) {
+        if (searchJob?.isActive == true || migrateJob?.isActive == true) return
+
+        val item = items.find { it.manga.id == mangaId } ?: return
+        item.searchResult.value = SearchResult.Searching
+        mutableState.update { it.copy(migrationComplete = false) }
+        searchJob = screenModelScope.launchIO {
+            try {
+                runMigrations(listOf(item))
+            } finally {
+                searchJob = null
+            }
+        }
+    }
 
     fun useMangaForMigration(current: Long, target: Long, onMissingChapters: () -> Unit) {
         val migratingManga = items.find { it.manga.id == current } ?: return
@@ -271,9 +323,9 @@ class MigrationListScreenModel(
     private fun migrateMangas(replace: Boolean) {
         migrateJob = screenModelScope.launchIO {
             mutableState.update { it.copy(dialog = Dialog.Progress(0f)) }
-            val items = items
+            val loadedItems = state.value.loadedItems
             try {
-                items.forEachIndexed { index, manga ->
+                loadedItems.forEachIndexed { index, manga ->
                     try {
                         ensureActive()
                         val target = manga.searchResult.value.let {
@@ -292,17 +344,19 @@ class MigrationListScreenModel(
                                 throttleFunc = throttleManager::throttle,
                                 // SY <--
                             )
+                            removeManga(manga)
+                            manga.migrationScope.cancel()
                         }
                     } catch (e: Exception) {
                         if (e is CancellationException) throw e
                         logcat(LogPriority.WARN, throwable = e)
                     }
                     mutableState.update {
-                        it.copy(dialog = Dialog.Progress((index.toFloat() / items.size).coerceAtMost(1f)))
+                        it.copy(dialog = Dialog.Progress(((index + 1f) / loadedItems.size).coerceAtMost(1f)))
                     }
                 }
 
-                navigateBack()
+                updateMigrationProgress()
             } finally {
                 mutableState.update { it.copy(dialog = null) }
                 migrateJob = null
@@ -339,7 +393,17 @@ class MigrationListScreenModel(
     }
 
     private fun removeManga(item: MigratingManga) {
-        mutableState.update { it.copy(items = items.toMutableList().apply { remove(item) }) }
+        mutableState.update { state ->
+            val itemIndex = state.items.indexOf(item)
+            val updatedItems = state.items.toMutableList().apply { remove(item) }
+            state.copy(
+                items = updatedItems,
+                loadedCount = when {
+                    itemIndex in 0 until state.loadedCount -> state.loadedCount - 1
+                    else -> state.loadedCount
+                }.coerceIn(0, updatedItems.size),
+            )
+        }
     }
 
     override fun onDispose() {
@@ -347,15 +411,17 @@ class MigrationListScreenModel(
         items.forEach {
             it.migrationScope.cancel()
         }
+        searchJob?.cancel()
     }
 
     fun showMigrateDialog(copy: Boolean) {
         mutableState.update { state ->
+            val loadedItems = state.loadedItems
             state.copy(
                 dialog = Dialog.Migrate(
                     copy = copy,
-                    totalCount = items.size,
-                    skippedCount = items.count { it.searchResult.value == SearchResult.NotFound },
+                    totalCount = loadedItems.size,
+                    skippedCount = loadedItems.count { it.searchResult.value == SearchResult.NotFound },
                 ),
             )
         }
@@ -384,10 +450,18 @@ class MigrationListScreenModel(
 
     data class State(
         val items: List<MigratingManga> = listOf(),
+        val loadedCount: Int = 0,
         val finishedCount: Int = 0,
         val migrationComplete: Boolean = false,
         val dialog: Dialog? = null,
     ) {
         val mangaIds: List<Long> = items.map { it.manga.id }
+        val loadedItems: List<MigratingManga> = items.take(loadedCount)
+        val canLoadMore: Boolean = loadedCount < items.size
+    }
+
+    private companion object {
+        const val MIGRATION_BATCH_SIZE = 10
+        const val MIN_STRICT_MATCH_THRESHOLD = 0.72
     }
 }

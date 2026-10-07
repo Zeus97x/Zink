@@ -50,12 +50,7 @@ abstract class BaseSmartSearchEngine<T>(
                     val candidates = searchAction(builtQuery)
                     candidates
                         .map {
-                            val distance = if (queries.size > 1 || candidates.size > 1) {
-                                calculateDistance(it)
-                            } else {
-                                1.0
-                            }
-                            SearchEntry(it, distance)
+                            SearchEntry(it, calculateDistance(it))
                         }
                         .filter { it.distance >= eligibleThreshold }
                 }

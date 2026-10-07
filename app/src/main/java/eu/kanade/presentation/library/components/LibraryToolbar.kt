@@ -1,29 +1,44 @@
 package eu.kanade.presentation.library.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.FlipToBack
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.active
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 
 @Composable
 fun LibraryToolbar(
@@ -87,6 +102,36 @@ private fun LibraryRegularToolbar(
     // SY <--
     scrollBehavior: TopAppBarScrollBehavior?,
 ) {
+    val preferences = remember { Injekt.get<LibraryPreferences>() }
+    val cardSize by preferences.cardSize.changes().collectAsState(initial = preferences.cardSize.get())
+    var showCardSize by remember { mutableStateOf(false) }
+    if (showCardSize) {
+        AlertDialog(
+            onDismissRequest = { showCardSize = false },
+            title = { Text(stringResource(MR.strings.zink_card_size)) },
+            text = {
+                Column {
+                    listOf(MR.strings.zink_card_compact, MR.strings.zink_card_comfortable, MR.strings.zink_card_large).forEachIndexed { index, label ->
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    preferences.cardSize.set(index)
+                                    preferences.portraitColumns.set(0)
+                                    preferences.landscapeColumns.set(0)
+                                    showCardSize = false
+                                }
+                                .padding(vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = cardSize == index, onClick = null)
+                            Text(stringResource(label), Modifier.padding(start = 12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showCardSize = false }) { Text(stringResource(MR.strings.action_close)) } },
+        )
+    }
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
     SearchToolbar(
         titleContent = {
@@ -117,6 +162,10 @@ private fun LibraryRegularToolbar(
                         icon = Icons.Outlined.FilterList,
                         iconTint = filterTint,
                         onClick = onClickFilter,
+                    ),
+                    AppBar.OverflowAction(
+                        title = stringResource(MR.strings.zink_card_size),
+                        onClick = { showCardSize = true },
                     ),
                     AppBar.OverflowAction(
                         title = stringResource(MR.strings.action_update_library),

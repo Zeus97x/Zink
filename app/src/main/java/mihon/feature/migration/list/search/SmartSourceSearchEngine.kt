@@ -5,7 +5,10 @@ import eu.kanade.tachiyomi.source.model.SManga
 import mihon.domain.manga.model.toDomainManga
 import tachiyomi.domain.manga.model.Manga
 
-class SmartSourceSearchEngine(extraSearchParams: String?) : BaseSmartSearchEngine<SManga>(extraSearchParams) {
+class SmartSourceSearchEngine(
+    extraSearchParams: String?,
+    eligibleThreshold: Double = MIN_ELIGIBLE_THRESHOLD,
+) : BaseSmartSearchEngine<SManga>(extraSearchParams, eligibleThreshold) {
 
     override fun getTitle(result: SManga) = result.title
 

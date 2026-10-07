@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -37,6 +36,7 @@ import eu.kanade.presentation.manga.MangaScreenItem
 import eu.kanade.tachiyomi.ui.manga.PagePreviewState
 import exh.util.floor
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.LightningProgressIndicator
 import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -54,7 +54,7 @@ private fun PagePreviewLoading(
             },
         contentAlignment = Alignment.Center,
     ) {
-        CircularProgressIndicator()
+        LightningProgressIndicator()
     }
 }
 
@@ -185,10 +185,10 @@ fun PagePreview(
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     val progress by page.progress.collectAsState()
                     if (progress < 0) {
-                        CircularProgressIndicator()
+                        LightningProgressIndicator()
                     } else {
-                        CircularProgressIndicator(
-                            progress = { progress / 0.01F },
+                        LightningProgressIndicator(
+                            progress = { progress / 100f },
                         )
                     }
                 }

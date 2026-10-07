@@ -40,6 +40,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
+import eu.kanade.presentation.library.LibraryToolsScreen
 import eu.kanade.presentation.more.settings.screen.about.AboutScreen
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
@@ -113,7 +114,7 @@ object SettingsMainScreen : Screen() {
                     items.indexOfFirst { it.screen::class == navigator.items.first()::class }
                         .also {
                             LaunchedEffect(Unit) {
-                                state.animateScrollToItem(it)
+                                if (it >= 0) state.animateScrollToItem(it + 2)
                                 if (it > 0) {
                                     // Lift scroll
                                     topBarState.contentOffset = topBarState.heightOffsetLimit
@@ -128,6 +129,20 @@ object SettingsMainScreen : Screen() {
                     state = state,
                     contentPadding = contentPadding,
                 ) {
+                    item {
+                        TextPreferenceWidget(
+                            title = stringResource(MR.strings.action_migrate),
+                            icon = Icons.Outlined.Sync,
+                            onPreferenceClick = { navigator.navigate(LibraryToolsScreen(false), twoPane) },
+                        )
+                    }
+                    item {
+                        TextPreferenceWidget(
+                            title = stringResource(MR.strings.zink_delete_duplicates),
+                            icon = Icons.Outlined.CollectionsBookmark,
+                            onPreferenceClick = { navigator.navigate(LibraryToolsScreen(true), twoPane) },
+                        )
+                    }
                     itemsIndexed(
                         items = items,
                         key = { _, item -> item.hashCode() },

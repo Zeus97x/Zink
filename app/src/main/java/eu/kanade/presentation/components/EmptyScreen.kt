@@ -2,7 +2,7 @@ package eu.kanade.presentation.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.PreviewLightDark
@@ -33,7 +33,7 @@ private fun WithActionPreview() {
                 actions = listOf(
                     EmptyScreenAction(
                         stringRes = MR.strings.action_retry,
-                        icon = Icons.Outlined.Refresh,
+                        icon = Icons.Outlined.Bolt,
                         onClick = {},
                     ),
                     EmptyScreenAction(

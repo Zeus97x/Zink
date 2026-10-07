@@ -34,6 +34,9 @@ class LibraryPreferences(
 
     val landscapeColumns: Preference<Int> = preferenceStore.getInt("pref_library_columns_landscape_key", 0)
 
+    // 0 = compact, 1 = comfortable, 2 = large.
+    val cardSize: Preference<Int> = preferenceStore.getInt("zink_library_card_size", 1)
+
     val lastUpdatedTimestamp: Preference<Long> = preferenceStore.getLong(
         Preference.appStateKey("library_update_last_timestamp"),
         0L,

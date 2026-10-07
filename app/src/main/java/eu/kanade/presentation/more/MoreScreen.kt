@@ -1,6 +1,8 @@
 package eu.kanade.presentation.more
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.HelpOutline
 import androidx.compose.material.icons.automirrored.outlined.Label
@@ -14,14 +16,14 @@ import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.more.settings.widget.SwitchPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.more.DownloadQueueState
 import tachiyomi.core.common.Constants
 import tachiyomi.i18n.MR
@@ -36,8 +38,6 @@ fun MoreScreen(
     downloadQueueStateProvider: () -> DownloadQueueState,
     downloadedOnly: Boolean,
     onDownloadedOnlyChange: (Boolean) -> Unit,
-    incognitoMode: Boolean,
-    onIncognitoModeChange: (Boolean) -> Unit,
     // SY -->
     showNavUpdates: Boolean,
     showNavHistory: Boolean,
@@ -53,6 +53,10 @@ fun MoreScreen(
     onClickHistory: () -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
+    val rowModifier = Modifier
+        .padding(horizontal = 12.dp, vertical = 4.dp)
+        .clip(RoundedCornerShape(20.dp))
+        .background(MaterialTheme.colorScheme.surfaceContainerLow)
 
     Scaffold { contentPadding ->
         ScrollbarLazyColumn(
@@ -63,20 +67,12 @@ fun MoreScreen(
             }
             item {
                 SwitchPreferenceWidget(
+                    modifier = rowModifier,
                     title = stringResource(MR.strings.label_downloaded_only),
                     subtitle = stringResource(MR.strings.downloaded_only_summary),
                     icon = Icons.Outlined.CloudOff,
                     checked = downloadedOnly,
                     onCheckedChanged = onDownloadedOnlyChange,
-                )
-            }
-            item {
-                SwitchPreferenceWidget(
-                    title = stringResource(MR.strings.pref_incognito_mode),
-                    subtitle = stringResource(MR.strings.pref_incognito_mode_summary),
-                    icon = ImageVector.vectorResource(R.drawable.ic_glasses_24dp),
-                    checked = incognitoMode,
-                    onCheckedChanged = onIncognitoModeChange,
                 )
             }
 
@@ -87,6 +83,7 @@ fun MoreScreen(
                 item {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.label_recent_updates),
+                        modifier = rowModifier,
                         icon = Icons.Outlined.NewReleases,
                         onPreferenceClick = onClickUpdates,
                     )
@@ -96,6 +93,7 @@ fun MoreScreen(
                 item {
                     TextPreferenceWidget(
                         title = stringResource(MR.strings.label_recent_manga),
+                        modifier = rowModifier,
                         icon = Icons.Outlined.History,
                         onPreferenceClick = onClickHistory,
                     )
@@ -107,6 +105,7 @@ fun MoreScreen(
                 val downloadQueueState = downloadQueueStateProvider()
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.label_download_queue),
+                    modifier = rowModifier,
                     subtitle = when (downloadQueueState) {
                         DownloadQueueState.Stopped -> null
                         is DownloadQueueState.Paused -> {
@@ -135,6 +134,7 @@ fun MoreScreen(
             item {
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.categories),
+                    modifier = rowModifier,
                     icon = Icons.AutoMirrored.Outlined.Label,
                     onPreferenceClick = onClickCategories,
                 )
@@ -142,6 +142,7 @@ fun MoreScreen(
             item {
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.label_stats),
+                    modifier = rowModifier,
                     icon = Icons.Outlined.QueryStats,
                     onPreferenceClick = onClickStats,
                 )
@@ -149,6 +150,7 @@ fun MoreScreen(
             item {
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.label_data_storage),
+                    modifier = rowModifier,
                     icon = Icons.Outlined.Storage,
                     onPreferenceClick = onClickDataAndStorage,
                 )
@@ -157,6 +159,7 @@ fun MoreScreen(
             item {
                 TextPreferenceWidget(
                     title = stringResource(SYMR.strings.eh_batch_add),
+                    modifier = rowModifier,
                     icon = Icons.AutoMirrored.Outlined.PlaylistAdd,
                     onPreferenceClick = onClickBatchAdd,
                 )
@@ -168,6 +171,7 @@ fun MoreScreen(
             item {
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.label_settings),
+                    modifier = rowModifier,
                     icon = Icons.Outlined.Settings,
                     onPreferenceClick = onClickSettings,
                 )
@@ -175,6 +179,7 @@ fun MoreScreen(
             item {
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.pref_category_about),
+                    modifier = rowModifier,
                     icon = Icons.Outlined.Info,
                     onPreferenceClick = onClickAbout,
                 )
@@ -182,6 +187,7 @@ fun MoreScreen(
             item {
                 TextPreferenceWidget(
                     title = stringResource(MR.strings.label_help),
+                    modifier = rowModifier,
                     icon = Icons.AutoMirrored.Outlined.HelpOutline,
                     onPreferenceClick = { uriHandler.openUri(Constants.URL_HELP) },
                 )

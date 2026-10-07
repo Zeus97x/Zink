@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,6 +25,7 @@ import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.util.system.toast
 import tachiyomi.i18n.sy.SYMR
+import tachiyomi.presentation.core.components.LightningProgressIndicator
 import tachiyomi.presentation.core.components.material.Scaffold
 import tachiyomi.presentation.core.i18n.stringResource
 
@@ -83,7 +83,7 @@ class SmartSearchScreen(
                     text = stringResource(SYMR.strings.searching_source),
                     style = MaterialTheme.typography.titleLarge,
                 )
-                CircularProgressIndicator(modifier = Modifier.size(56.dp))
+                LightningProgressIndicator(modifier = Modifier.size(56.dp))
             }
         }
     }

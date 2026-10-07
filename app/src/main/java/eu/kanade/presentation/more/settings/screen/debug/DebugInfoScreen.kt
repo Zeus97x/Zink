@@ -2,7 +2,7 @@ package eu.kanade.presentation.more.settings.screen.debug
 
 import android.os.Build
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Autorenew
+import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -88,7 +88,7 @@ class DebugInfoScreen : Screen() {
                             },
                         ) {
                             Icon(
-                                imageVector = Icons.Outlined.Autorenew,
+                                imageVector = Icons.Outlined.Bolt,
                                 tint = MaterialTheme.colorScheme.primary,
                                 contentDescription = null,
                             )
