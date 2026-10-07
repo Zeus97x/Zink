@@ -15,7 +15,6 @@ import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Storage
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -75,8 +74,6 @@ fun MoreScreen(
                     onCheckedChanged = onDownloadedOnlyChange,
                 )
             }
-
-            item { HorizontalDivider() }
 
             // SY -->
             if (!showNavUpdates) {
@@ -165,8 +162,6 @@ fun MoreScreen(
                 )
             }
             // SY <--
-
-            item { HorizontalDivider() }
 
             item {
                 TextPreferenceWidget(
