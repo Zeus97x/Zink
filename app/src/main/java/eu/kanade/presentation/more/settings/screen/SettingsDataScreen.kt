@@ -71,6 +71,7 @@ import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
 import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
+import java.io.FileNotFoundException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -579,8 +580,16 @@ object SettingsDataScreen : SearchableSettings {
             Preference.PreferenceItem.TextPreference(
                 title = stringResource(SYMR.strings.pref_google_drive_sign_in),
                 onClick = {
-                    val intent = googleDriveSync.getSignInIntent()
-                    context.startActivity(intent)
+                    try {
+                        val intent = googleDriveSync.getSignInIntent()
+                        context.startActivity(intent)
+                    } catch (e: FileNotFoundException) {
+                        logcat(LogPriority.ERROR, e) { "Google Drive login configuration is missing" }
+                        context.toast(SYMR.strings.google_drive_configuration_missing)
+                    } catch (e: Exception) {
+                        logcat(LogPriority.ERROR, e) { "Unable to start Google Drive sign-in" }
+                        context.toast(context.stringResource(SYMR.strings.google_drive_login_failed, e.message.orEmpty()))
+                    }
                 },
             ),
             getGoogleDrivePurge(),

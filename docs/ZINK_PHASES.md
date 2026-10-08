@@ -118,3 +118,27 @@ No APK build, push, or release has been performed for these phases.
 ## Authorized build and push — October 7, 2026
 
 User authorized completing all phases, building, and pushing Zink. The APK workflow now runs on master code pushes as well as manual dispatch, and publishes a release titled Zink only after build and unit tests pass. Local Gradle execution was attempted but stopped before compilation because services.gradle.org is unreachable from this workspace. GitHub Actions provides the pending compilation and unit-test validation; device testing remains pending. Other apps remain planning-only.
+
+## Next build: Google Drive sign-in crash fix
+
+Deferred by the user on October 7, 2026; low priority. Include with the next
+authorized build, without triggering a separate push or build now.
+
+- Crash log confirms that tapping Google Drive Sign in throws
+  `FileNotFoundException: client_secrets.json` before opening the login browser.
+- Prepared locally: include the existing `CLIENT_SECRETS_TEXT` GitHub Actions
+  secret as the APK's Google OAuth configuration when available, validating its
+  JSON and required client fields without printing credentials.
+- Prepared locally: catch sign-in startup failures and display a clear error
+  instead of crashing. A missing configuration explicitly reports that Google
+  Drive sign-in is unavailable in that build.
+- Google Drive sync requires a valid configured `CLIENT_SECRETS_TEXT` secret;
+  its availability has not been verified. Do not treat the crash guard as proof
+  that Google Drive authentication or sync works.
+- XML, workflow YAML, embedded Python syntax, and whitespace checks passed.
+  Compilation and device testing remain pending for these changes.
+- On the next build, test missing configuration, browser sign-in, and actual
+  sync with valid configuration. Follow the model-change pause and the user's
+  push-and-link preference; do not monitor the build unless requested.
+
+One follow-up item remains, queued for the next build.
