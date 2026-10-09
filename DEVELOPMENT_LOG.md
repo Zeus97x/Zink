@@ -168,3 +168,10 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 - Failed run 37941766706, job 113857664336, stopped before Gradle at Restore permanent signing key: SIGNING_KEYSTORE_BASE64 is invalid Base64. All four secret variables were nonempty; no APK built. Actual secret value is unavailable, so whitespace is a possible cause, not confirmed.
 - Normalize whitespace in the Base64 value before strict decoding; retain invalid-character checks and clarify the corrective copy/paste instruction. No changes to the permanent key or password requirements.
 - Verification: restore script checks passed including round-trip and missing/invalid values, plus whitespace-wrapped actual key round-trip. Publish workflow and log fix to trigger one replacement build. If still invalid, user must replace this one secret with the complete text file contents; connector cannot edit secrets.
+
+## 2026-10-09 — Replace missing FlexibleAdapter artifact with pinned source
+
+- Run 37942611702, job 113860587940: signing restore succeeded, then compileDebugAidl failed resolving FlexibleAdapter c8013533. Both JitPack host URLs return 404. JitPack build API reports Error/No build artifacts; upstream log shows missing nu.studer:java-ordered-properties:1.0.1 required by old grabver publishing plugin. This is a dependency availability failure, not a signing-secret failure.
+- Vendor flexible-adapter/src/main from exact original arkon/FlexibleAdapter commit c80135339bcff5f7f8c2c2380329dfc155b26232 with Apache license/provenance. Preserve Java/resources; use modern namespace manifest and Zink Android library convention instead of upstream publishing plugins. App depends on local project; remove obsolete catalog artifact.
+- Paths: third-party/flexible-adapter/**; settings.gradle.kts; gradle/libs.versions.toml; app/build.gradle.kts; DEVELOPMENT_LOG.md.
+- Verification: Java/resource bytes compared with pinned upstream; XML parsed; local project dependency and manifest namespace checked; git diff --check. Full Gradle compilation pending replacement CI. Publish and trigger one replacement APK build; no ongoing monitoring unless asked.
