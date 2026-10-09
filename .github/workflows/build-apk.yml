@@ -70,7 +70,7 @@ jobs:
           keytool -list -keystore "$RUNNER_TEMP/zink-signing.jks" \
             -storepass:env SIGNING_STORE_PASSWORD -alias "$SIGNING_KEY_ALIAS" > /dev/null
 
-      # Keep the installed application ID; use the permanent key for this variant.
+      # Update compatibility build: keep the application ID and permanent signing key.
       - name: Build and test
         env:
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}

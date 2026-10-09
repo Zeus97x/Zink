@@ -189,3 +189,8 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 - Publication blocker: automatic approval review rejected the five-file GitHub tree write for the sync fix, requiring explicit export approval for this payload to Zeus97x/Zink. No remote tree/ref update or APK build from this fix. Local changes remain prepared and committed; ask approval before retrying.
 
 - User explicitly approved uploading the prepared sync source/tests/documentation to Zeus97x/Zink at 10:50 Toronto time. Prior publication blocker resolved. Source-only commit retains skip-ci; no new APK build in this step.
+
+## 2026-10-09 — Build compact sync APK for install-over test
+
+- User explicitly requests building the published sync fix and testing the permanent signing setup. Base master is 65bbd48d3bd28d382294dd6543358a2324256031. Workflow comment-only change triggers one new master build; signing configuration/key and increasing run-number versionCode remain unchanged.
+- GitHub CI will compile the APK and run JVM tests, including compact snapshot regression cases. Results are pending. User will install this APK over the first permanently signed APK and confirm retained library/settings and actual cloud sync. No claim of successful update compatibility before the phone test.
