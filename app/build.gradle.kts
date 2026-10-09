@@ -31,7 +31,7 @@ android {
     defaultConfig {
         applicationId = "eu.kanade.tachiyomi.sy"
 
-        versionCode = 81
+        versionCode = providers.environmentVariable("ZINK_VERSION_CODE").orNull?.toInt() ?: 81
         versionName = "1.13.2"
 
         buildConfigField("String", "UPSTREAM_VERSION", """"0.20.1"""")
@@ -42,6 +42,16 @@ android {
         buildConfigField("boolean", "INCLUDE_UPDATER", "false")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    val signingKeystore = providers.environmentVariable("ZINK_SIGNING_KEYSTORE").orNull
+    if (signingKeystore != null) {
+        signingConfigs.getByName("debug") {
+            storeFile = file(signingKeystore)
+            storePassword = providers.environmentVariable("SIGNING_STORE_PASSWORD").get()
+            keyAlias = providers.environmentVariable("SIGNING_KEY_ALIAS").get()
+            keyPassword = providers.environmentVariable("SIGNING_KEY_PASSWORD").get()
+        }
     }
 
     buildTypes {

@@ -68,7 +68,7 @@ the follow-up remain pending.
 - Releases use the visible name Zink and the APK filename Zink.apk. The current
   master workflow builds a debug-signed universal APK using JDK 17 and
   ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon --stacktrace.
-- Do not add signing keys, secrets or update-over-install work to the plans.
+- Superseded October 9: the user now explicitly requests permanent signing and update-over-install setup. See the signing preparation section below.
 - Preserve user work and existing features. Do not add raw crash logs containing
   device identifiers to the public repository; the diagnosis above is sufficient.
 
@@ -77,3 +77,16 @@ See ZINK_PHASES.md for feature details and the next-build checklist.
 ### Source publication blocked (October 9)
 
 Automatic approval review also rejected uploading the complete prepared source to Zeus97x/Zink because explicit export approval is required. Source is local only; no GitHub tree/commit/ref or APK was created. Ask for one approval covering source upload to Zeus97x/Zink and the prepared private table/function on the shared ZPet Supabase project. Source upload must use [skip ci]; preserve model-change pause before APK build. See DEVELOPMENT_LOG.md for the checkpoint and actual verification.
+
+## Permanent signing preparation — October 9, 2026
+
+User requested preparing everything so they only need to enter GitHub secret values.
+The master APK workflow now requires SIGNING_KEYSTORE_BASE64, SIGNING_STORE_PASSWORD, SIGNING_KEY_ALIAS and SIGNING_KEY_PASSWORD. Restore the permanent key into RUNNER_TEMP, configure the existing debug variant through ZINK_SIGNING_KEYSTORE, and assign versionCode = 1000 + GITHUB_RUN_NUMBER. Preserve applicationId eu.kanade.tachiyomi.sy.debug. Missing/invalid secrets fail before the build; cleanup runs even after failure. Local builds without these env vars retain their previous behavior and are not suitable for distributing updates to the permanently signed APK.
+
+A private signing setup ZIP with the keystore and individual copy-paste value files was generated outside the repository for the user. Never regenerate it just because a new session starts; reuse the same key. No secret values belong in source or logs. User must add the four secrets in GitHub settings. This preparation does not trigger an APK build. Preserve the model-change pause before the next requested build. Existing installations likely require one backed-up reinstall because previous runner debug keys were not preserved. Phone update compatibility and Android compilation remain unverified.
+
+The in-app updater remains disabled for debug and still points upstream; GitHub APK updates are the first delivery method. OTA integration is deferred.
+
+### First permanently signed build authorization
+
+October 9: user confirms entering four signing secrets and authorizes publication/build. Publish prepared configuration without skip-ci to trigger one APK run, then provide its link. Do not monitor unless asked. Secret contents are not readable through the connector; the build validates them. Earlier source publication denial has been resolved by explicit approval.

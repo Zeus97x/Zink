@@ -146,3 +146,19 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 - Added next-phase acceptance criteria for local installed-extension inventory, repo-first matching, legacy source-based backup recovery, right-side Install, searchable Find match/change-match, per-extension Android prompts and retry/status handling. Keep access via existing three-dot entry and show recovery after local restore. Include unused installed extensions in inventory; cloud sync excludes it.
 - Paths: docs/ZINK_PHASES.md; docs/CODEX_HANDOFF.md; DEVELOPMENT_LOG.md.
 - Verification: inspected current phase/handoff and backup limitations; documentation clearly marks the feature planned, not implemented. git diff --check passed. No runtime changes/tests/build. Next step is implementing this next phase when requested; do not suggest uninstall testing beforehand.
+
+## 2026-10-09 — Prepare permanent signing and install-over updates
+
+- Request: investigate repeated uninstalls, then prepare all signing setup so the user only enters secret values. This explicitly supersedes earlier instructions excluding signing work.
+- Evidence: master build-apk.yml uses assembleDebug and does not restore/persist its runner debug keystore. Latest successful run 37888416977 uploads only the APK artifact. No keystore found in source. This makes changing runner debug signatures the likely reinstall cause; installed APK certificates were not compared. In-app updater is disabled in debug and points at jobobby04 upstream repos.
+- Generated one RSA 3072-bit JKS outside Git; verified password and alias with keytool. Private setup includes key backup and four copy-paste secret value files. Do not log values or regenerate this key for later builds.
+- Workflow now validates four secret names, strictly decodes the keystore in RUNNER_TEMP, validates its store password/alias, injects signing vars into Gradle and removes the key with always() cleanup. Missing secrets fail clearly before building. Gradle configures the existing debug signing configuration from environment and sets distributed versionCode to 1000 + GITHUB_RUN_NUMBER, preserving eu.kanade.tachiyomi.sy.debug. Local defaults remain as before. No temporary-key fallback in the published workflow.
+- Paths: .github/workflows/build-apk.yml; app/build.gradle.kts; .gitignore; docs/CODEX_HANDOFF.md; docs/ZINK_PHASES.md; DEVELOPMENT_LOG.md.
+- Verification: YAML and embedded Python parse; actual generated keystore decode round-trip; version-code assignment; all four missing-secret errors; malformed Base64 error; step ordering and always cleanup; keytool alias/store-password check; git diff --check. Android compilation and phone install/update remain pending.
+- Publication uses [skip ci]; no APK/build requested for this preparation. GitHub connector cannot add/read Actions secrets. User adds SIGNING_KEYSTORE_BASE64, SIGNING_STORE_PASSWORD, SIGNING_KEY_ALIAS, SIGNING_KEY_PASSWORD, then requests next build. Likely one backed-up reinstall required for the new key. OTA not implemented.
+
+## 2026-10-09 — Authorize publication and first permanently signed build
+
+- User reports adding all four GitHub Actions secrets and explicitly authorizes uploading the prepared changes and building the APK. Earlier auto-review publication blocker is resolved by this explicit authorization.
+- Re-ran signing preparation checks and git diff --check successfully. Publish the six prepared files with a normal commit to trigger master APK workflow once. No signing credentials are included in the source payload.
+- Build/Gradle compilation and phone update behavior remain pending; do not monitor the run unless asked. Give the user the run link after confirming launch. First permanently signed installation likely requires a backed-up reinstall.

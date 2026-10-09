@@ -36,8 +36,45 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
-      # Debug signing avoids introducing new signing-key requirements.
+      - name: Restore permanent signing key
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+        run: |
+          python3 - <<'PYTHON'
+          import base64
+          import os
+          from pathlib import Path
+
+          names = ('SIGNING_KEYSTORE_BASE64', 'SIGNING_STORE_PASSWORD',
+                   'SIGNING_KEY_ALIAS', 'SIGNING_KEY_PASSWORD')
+          missing = [name for name in names if not os.environ.get(name)]
+          if missing:
+              raise SystemExit('Missing GitHub Actions secrets: ' + ', '.join(missing))
+          key = Path(os.environ['RUNNER_TEMP']) / 'zink-signing.jks'
+          try:
+              decoded = base64.b64decode(os.environ['SIGNING_KEYSTORE_BASE64'], validate=True)
+          except ValueError:
+              raise SystemExit('SIGNING_KEYSTORE_BASE64 is invalid Base64')
+          if not decoded:
+              raise SystemExit('Signing keystore is empty')
+          key.write_bytes(decoded)
+          key.chmod(0o600)
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f'ZINK_SIGNING_KEYSTORE={key}\n')
+              output.write(f"ZINK_VERSION_CODE={1000 + int(os.environ['GITHUB_RUN_NUMBER'])}\n")
+          PYTHON
+          keytool -list -keystore "$RUNNER_TEMP/zink-signing.jks" \
+            -storepass:env SIGNING_STORE_PASSWORD -alias "$SIGNING_KEY_ALIAS" > /dev/null
+
+      # Keep the installed application ID; use the permanent key for this variant.
       - name: Build and test
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
         run: |
           chmod +x gradlew
           ./gradlew :app:assembleDebug :app:testDebugUnitTest --no-daemon --stacktrace
@@ -59,6 +96,10 @@ jobs:
           shutil.copy2(output / universal[0]['outputFile'], destination)
           PY
 
+      - name: Remove signing key
+        if: always()
+        run: rm -f "$RUNNER_TEMP/zink-signing.jks"
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v7
         with:
@@ -77,6 +118,6 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            Zink APK. This is a debug-signed build.
+            Zink APK signed with the permanent Zink key. Keep Zink installed for future updates.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

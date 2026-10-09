@@ -96,7 +96,7 @@ Implemented as a APK workflow, not run:
 The corrected request is planning only for ZDo, ZMM, ZBox, and ZCalc. Append
 lightning loading/refresh and app-name-only APK release delivery to their existing
 queues. No app implementation or build was made in those projects from this chat.
-Do not add new signing keys or update-over-install work. ZRetire remains excluded
+The earlier signing exclusion is superseded for Zink only by the October 9 explicit request. ZRetire remains excluded
 from the lightning change.
 
 ## Verification Before Release
@@ -188,3 +188,11 @@ User clarified that restoration must display a list of extensions with Install o
 - Each Install starts only that selected extension's download and Android installer prompt. After successful installation refresh the row to Installed; cancelled or failed installation leaves the row available for retry. No automatic install-all chain.
 - Open this recovery list after local-backup restore and retain access through the existing top-right three-dot entry. User can leave and return to finish later.
 - Final verification: backup an installed extension, restore on a device where it is missing, verify repo-first matching, Find match selection, individual Android prompts, cancellation/retry and completion statuses. Test an older backup and an extension unused by library titles. This phase is specified, not implemented; uninstall testing must wait until it is delivered.
+
+## Permanent signing — prepared October 9, 2026
+
+- User now authorizes permanent signing setup; earlier exclusions are superseded for Zink.
+- Prepared master workflow requires four signing secrets, preserves the existing debug application ID, and increments distributed versionCode using the workflow run number.
+- Private key and copy-paste values delivered separately, excluded from Git.
+- Pending: user adds secrets, next authorized APK build, backed-up migration reinstall if required, then second-build update test confirming library/settings retention.
+- No APK built for preparation. In-app updater remains deferred; its existing upstream source is not Zink.
