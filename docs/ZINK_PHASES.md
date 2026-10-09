@@ -169,3 +169,7 @@ Automatic approval review also rejected uploading the complete prepared source t
 ### October 9 APK compilation repair
 
 Initial APK run 37887215949 failed compiling LocalCoverManager.kt because nameWithoutExtension is nullable. Both new lowercase lookups now use safe calls and an empty fallback, preserving cover/poster/folder priority. Replacement CI build is authorized; APK and JVM test outcomes are still pending.
+
+### October 9 repository restore compilation repair
+
+Build 37888040855 passed source-local then failed app compilation: restoreExtensionStores requires a CoroutineScope receiver. The call now runs inside the existing coroutineScope and joins before other restore tasks. Rebuild is authorized; JVM tests and APK success remain pending.

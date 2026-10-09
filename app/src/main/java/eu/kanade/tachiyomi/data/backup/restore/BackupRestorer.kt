@@ -120,11 +120,11 @@ class BackupRestorer(
             restoreAmount += 1
         }
 
-        // Restore repositories before sources/titles or future extension installation.
-        if (options.extensionStores) {
-            restoreExtensionStores(backup.backupExtensionStores)
-        }
         coroutineScope {
+            // Finish repositories before sources/titles or future extension installation.
+            if (options.extensionStores) {
+                restoreExtensionStores(backup.backupExtensionStores).join()
+            }
             if (options.categories) {
                 restoreCategories(backup.backupCategories)
             }

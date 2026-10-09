@@ -123,3 +123,11 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 - Verification: inspected all compiler error lines in the failed job log; both reported receiver errors are addressed. git diff --check passed; targeted source check confirms both lookups use safe calls. Full Android compilation remains delegated to the replacement CI build because local Gradle distribution bootstrap is unavailable. Do not claim APK success until CI completes.
 - Exact paths: source-local/src/androidMain/kotlin/tachiyomi/source/local/image/LocalCoverManager.kt; DEVELOPMENT_LOG.md; docs/CODEX_HANDOFF.md; docs/ZINK_PHASES.md.
 - Next: publish this fix on master without skip-ci and give the replacement APK build link; do not monitor unless asked. Device checks for local folder covers and library/reading sync remain pending.
+
+## 2026-10-09 — Fix repository restore coroutine scope after second failed APK
+
+- Request: fix replacement APK run https://github.com/Zeus97x/Zink/actions/runs/37888040855. Job 113682376595 passed the earlier source-local compilation point, then failed :app:compileDebugKotlin at BackupRestorer.kt:125. The only compiler error reported was calling CoroutineScope.restoreExtensionStores without a CoroutineScope receiver. Unit tests/release remained skipped.
+- Fix: move repository restoration inside the existing coroutineScope and join its child Job before launching remaining restore tasks. This supplies the required receiver and enforces repositories-before-titles, including cancellation through the parent scope. Cloud sync still excludes repositories and is unaffected; full local backups retain repository restoration.
+- Verification: reviewed every compiler error in job 113682376595; inspected the helper's CoroutineScope receiver and Job return. git diff --check passed and the corrected call is inside coroutineScope with join before other task launches. Full compilation/JVM tests remain pending replacement CI, with local Gradle bootstrap unavailable.
+- Paths: app/src/main/java/eu/kanade/tachiyomi/data/backup/restore/BackupRestorer.kt; DEVELOPMENT_LOG.md; docs/CODEX_HANDOFF.md; docs/ZINK_PHASES.md.
+- Next: publish fix on master to trigger the APK workflow, provide build link and do not monitor unless asked. Phone validation remains pending.
