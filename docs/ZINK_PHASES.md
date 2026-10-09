@@ -177,3 +177,14 @@ Build 37888040855 passed source-local then failed app compilation: restoreExtens
 ### October 9 local automatic retention
 
 User reports sync working. Automatic backups now keep the newest successful backup, with unique filenames and old-file cleanup only after validation. Source checks passed; compilation and device storage checks await the next build. Extension APK inventory/reinstall is still pending; existing backups contain repositories/source IDs, not APK binaries. Do not suggest uninstall testing until Install is implemented.
+
+## Next phase — Missing extension list and match/install actions (planned)
+
+User clarified that restoration must display a list of extensions with Install or Find match, rather than silently reinstalling them.
+
+- Save an installed-extension inventory in LOCAL backups: package identity, display name, language/version, provided source IDs and originating repository when known. Include installed extensions even if no library title currently uses them. Older backups have source IDs/names only, so show those as source-based recovery rows when package inventory is absent. No APK binaries are currently backed up. Cloud sync remains library/progress/history only.
+- Restore repositories first, then load their extension catalogues and display missing extensions with name, language, repository and status (Matched, Needs match, Installing, Installed, Unavailable). Exact package/source identity should establish confirmed matches; similar names should produce candidates for user selection.
+- Confirmed match: Install on the right. Unknown or ambiguous match: Find match opens searchable repo candidates; user chooses an extension, then installs it. Offer Find match/change match on matched rows too if a repo moved or an extension changed. Missing repository/catalogue/network errors should have a retry or add-repository path, not a guessed installation.
+- Each Install starts only that selected extension's download and Android installer prompt. After successful installation refresh the row to Installed; cancelled or failed installation leaves the row available for retry. No automatic install-all chain.
+- Open this recovery list after local-backup restore and retain access through the existing top-right three-dot entry. User can leave and return to finish later.
+- Final verification: backup an installed extension, restore on a device where it is missing, verify repo-first matching, Find match selection, individual Android prompts, cancellation/retry and completion statuses. Test an older backup and an extension unused by library titles. This phase is specified, not implemented; uninstall testing must wait until it is delivered.
