@@ -17,7 +17,7 @@ import kotlinx.coroutines.flow.shareIn
 
 class StorageManager(
     private val context: Context,
-    storagePreferences: StoragePreferences,
+    private val storagePreferences: StoragePreferences,
 ) {
 
     private val scope = CoroutineScope(Dispatchers.IO)
@@ -29,6 +29,21 @@ class StorageManager(
         .shareIn(scope, SharingStarted.Lazily, 1)
 
     init {
+        // Preserve existing local titles/URLs without moving or deleting their files.
+        if (!storagePreferences.localBookshelfMigrated.get()) {
+            if (storagePreferences.localBookshelfDirectory.get().isBlank()) {
+                baseDir?.findFile(LOCAL_SOURCE_PATH)?.takeIf { it.isDirectory }?.let {
+                    storagePreferences.localBookshelfDirectory.set(it.uri.toString())
+                }
+            }
+            storagePreferences.localBookshelfMigrated.set(true)
+        }
+        storagePreferences.localBookshelfDirectory.changes()
+            .drop(1)
+            .distinctUntilChanged()
+            .onEach { _changes.send(Unit) }
+            .launchIn(scope)
+
         storagePreferences.baseStorageDirectory.changes()
             .drop(1)
             .distinctUntilChanged()
@@ -36,7 +51,6 @@ class StorageManager(
                 baseDir = getBaseDir(uri)
                 baseDir?.let { parent ->
                     parent.createDirectory(AUTOMATIC_BACKUPS_PATH)
-                    parent.createDirectory(LOCAL_SOURCE_PATH)
                     parent.createDirectory(DOWNLOADS_PATH).also {
                         DiskUtil.createNoMediaFile(it, context)
                     }
@@ -60,7 +74,13 @@ class StorageManager(
     }
 
     fun getLocalSourceDirectory(): UniFile? {
-        return baseDir?.createDirectory(LOCAL_SOURCE_PATH)
+        val uri = storagePreferences.localBookshelfDirectory.get()
+        if (uri.isBlank()) return null
+        return try {
+            getBaseDir(uri)?.takeIf { it.isDirectory && it.canRead() }
+        } catch (_: SecurityException) {
+            null
+        }
     }
 
     // SY -->

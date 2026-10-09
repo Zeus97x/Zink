@@ -5,7 +5,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
@@ -37,7 +38,6 @@ import eu.kanade.presentation.manga.components.ChapterDownloadAction
 import eu.kanade.presentation.manga.components.ChapterDownloadIndicator
 import eu.kanade.presentation.manga.components.DotSeparatorText
 import eu.kanade.presentation.manga.components.MangaCover
-import eu.kanade.presentation.util.animateItemFastScroll
 import eu.kanade.presentation.util.relativeTimeSpanString
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
@@ -95,14 +95,14 @@ internal fun LazyListScope.updatesUiItems(
         when (item) {
             is UpdatesUiModel.Header -> {
                 ListGroupHeader(
-                    modifier = Modifier.animateItemFastScroll(),
+                    modifier = Modifier,
                     text = relativeDateText(item.date),
                 )
             }
             is UpdatesUiModel.Item -> {
                 val updatesItem = item.item
                 UpdatesUiItem(
-                    modifier = Modifier.animateItemFastScroll(),
+                    modifier = Modifier,
                     update = updatesItem.update,
                     selected = updatesItem.selected,
                     readProgress = updatesItem.update.lastPageRead
@@ -167,14 +167,13 @@ private fun UpdatesUiItem(
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 },
             )
-            .height(56.dp)
-            .padding(horizontal = MaterialTheme.padding.medium),
+            .heightIn(min = 64.dp)
+            .padding(horizontal = MaterialTheme.padding.medium, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MangaCover.Square(
             modifier = Modifier
-                .padding(vertical = 6.dp)
-                .fillMaxHeight(),
+                .size(48.dp),
             data = update.coverData,
             onClick = onClickCover,
         )
@@ -209,7 +208,7 @@ private fun UpdatesUiItem(
                         imageVector = Icons.Filled.Bookmark,
                         contentDescription = stringResource(MR.strings.action_filter_bookmarked),
                         modifier = Modifier
-                            .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
+                            .sizeIn(maxHeight = with(LocalDensity.current) { (textHeight.toDp() - 2.dp).coerceAtLeast(0.dp) }),
                         tint = MaterialTheme.colorScheme.primary,
                     )
                     Spacer(modifier = Modifier.width(2.dp))

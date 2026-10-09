@@ -67,11 +67,8 @@ import eu.kanade.tachiyomi.data.export.LibraryExporter
 import eu.kanade.tachiyomi.data.export.LibraryExporter.ExportOptions
 import eu.kanade.tachiyomi.data.sync.SyncDataJob
 import eu.kanade.tachiyomi.data.sync.SyncManager
-import eu.kanade.tachiyomi.data.sync.service.GoogleDriveService
-import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
 import eu.kanade.tachiyomi.util.system.DeviceUtil
 import eu.kanade.tachiyomi.util.system.toast
-import java.io.FileNotFoundException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import logcat.LogPriority
@@ -119,11 +116,15 @@ object SettingsDataScreen : SearchableSettings {
 
         val syncPreferences = remember { Injekt.get<SyncPreferences>() }
         val syncService by syncPreferences.syncService.collectAsState()
+        val session by syncPreferences.zAppsSession.collectAsState()
+        val context = LocalContext.current
+        LaunchedEffect(syncService, session) { SyncDataJob.setupTask(context) }
 
         return listOf(
             getStorageLocationPref(storagePreferences = storagePreferences),
             Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.pref_storage_location_info)),
 
+            getLocalBookshelfGroup(storagePreferences),
             getBackupAndRestoreGroup(backupPreferences = backupPreferences),
             getDataGroup(),
             getExportGroup(),
@@ -196,6 +197,40 @@ object SettingsDataScreen : SearchableSettings {
                     context.toast(MR.strings.file_picker_error)
                 }
             },
+        )
+    }
+
+    @Composable
+    private fun getLocalBookshelfGroup(storagePreferences: StoragePreferences): Preference.PreferenceGroup {
+        val context = LocalContext.current
+        val navigator = LocalNavigator.currentOrThrow
+        val picker = storageLocationPicker(storagePreferences.localBookshelfDirectory)
+        return Preference.PreferenceGroup(
+            title = stringResource(MR.strings.zink_local_bookshelf),
+            preferenceItems = listOf(
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.zink_bookshelf_folder),
+                    subtitle = storageLocationText(storagePreferences.localBookshelfDirectory),
+                    onClick = {
+                        try {
+                            picker.launch(null)
+                        } catch (_: ActivityNotFoundException) {
+                            context.toast(MR.strings.file_picker_error)
+                        }
+                    },
+                ),
+                Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.zink_bookshelf_info)),
+                Preference.PreferenceItem.TextPreference(
+                    title = stringResource(MR.strings.zink_bookshelf_open),
+                    onClick = {
+                        if (Injekt.get<tachiyomi.domain.storage.service.StorageManager>().getLocalSourceDirectory() == null) {
+                            context.toast(MR.strings.zink_bookshelf_choose_folder)
+                        } else {
+                            navigator.push(eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen(tachiyomi.source.local.LocalSource.ID, null))
+                        }
+                    },
+                ),
+            ),
         )
     }
 
@@ -521,9 +556,12 @@ object SettingsDataScreen : SearchableSettings {
                         entries = mapOf(
                             SyncManager.SyncService.NONE.value to stringResource(MR.strings.off),
                             SyncManager.SyncService.SYNCYOMI.value to stringResource(SYMR.strings.syncyomi),
-                            SyncManager.SyncService.GOOGLE_DRIVE.value to stringResource(SYMR.strings.google_drive),
+                            SyncManager.SyncService.SUPABASE.value to stringResource(MR.strings.zink_cloud_sync),
                         ),
-                        onValueChanged = { true },
+                        onValueChanged = {
+                            syncPreferences.lastSyncTimestamp.set(0)
+                            true
+                        },
                     ),
                 ),
             ),
@@ -552,10 +590,11 @@ object SettingsDataScreen : SearchableSettings {
         val preferences = when (syncServiceType) {
             SyncManager.SyncService.NONE -> emptyList()
             SyncManager.SyncService.SYNCYOMI -> getSelfHostPreferences(syncPreferences)
-            SyncManager.SyncService.GOOGLE_DRIVE -> getGoogleDrivePreferences()
+            SyncManager.SyncService.SUPABASE -> getZAppsAccountPreferences(syncPreferences)
+            SyncManager.SyncService.GOOGLE_DRIVE -> emptyList()
         }
 
-        return if (syncServiceType != SyncManager.SyncService.NONE) {
+        return if (syncServiceType != SyncManager.SyncService.NONE && syncServiceType != SyncManager.SyncService.SUPABASE) {
             preferences + Preference.PreferenceItem.TextPreference(
                 title = stringResource(SYMR.strings.pref_choose_what_to_sync),
                 onClick = {
@@ -570,95 +609,6 @@ object SettingsDataScreen : SearchableSettings {
     @Composable
     private fun getAdditionalPreferences(syncPreferences: SyncPreferences): List<Preference> {
         return listOf(getSyncNowPref(), getAutomaticSyncGroup(syncPreferences))
-    }
-
-    @Composable
-    private fun getGoogleDrivePreferences(): List<Preference> {
-        val context = LocalContext.current
-        val googleDriveSync = Injekt.get<GoogleDriveService>()
-        return listOf(
-            Preference.PreferenceItem.TextPreference(
-                title = stringResource(SYMR.strings.pref_google_drive_sign_in),
-                onClick = {
-                    try {
-                        val intent = googleDriveSync.getSignInIntent()
-                        context.startActivity(intent)
-                    } catch (e: FileNotFoundException) {
-                        logcat(LogPriority.ERROR, e) { "Google Drive login configuration is missing" }
-                        context.toast(SYMR.strings.google_drive_configuration_missing)
-                    } catch (e: Exception) {
-                        logcat(LogPriority.ERROR, e) { "Unable to start Google Drive sign-in" }
-                        context.toast(context.stringResource(SYMR.strings.google_drive_login_failed, e.message.orEmpty()))
-                    }
-                },
-            ),
-            getGoogleDrivePurge(),
-        )
-    }
-
-    @Composable
-    private fun getGoogleDrivePurge(): Preference.PreferenceItem.TextPreference {
-        val scope = rememberCoroutineScope()
-        val context = LocalContext.current
-        val googleDriveSync = remember { GoogleDriveSyncService(context) }
-        var showPurgeDialog by remember { mutableStateOf(false) }
-
-        if (showPurgeDialog) {
-            PurgeConfirmationDialog(
-                onConfirm = {
-                    showPurgeDialog = false
-                    scope.launch {
-                        val result = googleDriveSync.deleteSyncDataFromGoogleDrive()
-                        when (result) {
-                            GoogleDriveSyncService.DeleteSyncDataStatus.NOT_INITIALIZED -> context.toast(
-                                SYMR.strings.google_drive_not_signed_in,
-                                duration = 5000,
-                            )
-                            GoogleDriveSyncService.DeleteSyncDataStatus.NO_FILES -> context.toast(
-                                SYMR.strings.google_drive_sync_data_not_found,
-                                duration = 5000,
-                            )
-                            GoogleDriveSyncService.DeleteSyncDataStatus.SUCCESS -> context.toast(
-                                SYMR.strings.google_drive_sync_data_purged,
-                                duration = 5000,
-                            )
-                            GoogleDriveSyncService.DeleteSyncDataStatus.ERROR -> context.toast(
-                                SYMR.strings.google_drive_sync_data_purge_error,
-                                duration = 10000,
-                            )
-                        }
-                    }
-                },
-                onDismissRequest = { showPurgeDialog = false },
-            )
-        }
-
-        return Preference.PreferenceItem.TextPreference(
-            title = stringResource(SYMR.strings.pref_google_drive_purge_sync_data),
-            onClick = { showPurgeDialog = true },
-        )
-    }
-
-    @Composable
-    private fun PurgeConfirmationDialog(
-        onConfirm: () -> Unit,
-        onDismissRequest: () -> Unit,
-    ) {
-        AlertDialog(
-            onDismissRequest = onDismissRequest,
-            title = { Text(text = stringResource(SYMR.strings.pref_purge_confirmation_title)) },
-            text = { Text(text = stringResource(SYMR.strings.pref_purge_confirmation_message)) },
-            dismissButton = {
-                TextButton(onClick = onDismissRequest) {
-                    Text(text = stringResource(MR.strings.action_cancel))
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = onConfirm) {
-                    Text(text = stringResource(MR.strings.action_ok))
-                }
-            },
-        )
     }
 
     @Composable

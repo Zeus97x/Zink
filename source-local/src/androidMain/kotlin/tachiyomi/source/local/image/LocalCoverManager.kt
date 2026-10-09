@@ -9,6 +9,7 @@ import tachiyomi.core.common.storage.nameWithoutExtension
 import tachiyomi.core.common.util.system.ImageUtil
 import tachiyomi.source.local.io.LocalSourceFileSystem
 import java.io.InputStream
+import java.util.Locale
 
 private const val DEFAULT_COVER_NAME = "cover.jpg"
 private const val COVER_ARCHIVE_NAME = "cover.cbi"
@@ -19,9 +20,10 @@ actual class LocalCoverManager(
 ) {
 
     actual fun find(mangaUrl: String): UniFile? {
+        val coverNames = listOf("cover", "poster", "folder")
         return fileSystem.getFilesInMangaDirectory(mangaUrl)
-            // Get all file whose names start with "cover"
-            .filter { it.isFile && it.nameWithoutExtension.equals("cover", ignoreCase = true) }
+            .filter { it.isFile && it.nameWithoutExtension.lowercase(Locale.ROOT) in coverNames }
+            .sortedBy { coverNames.indexOf(it.nameWithoutExtension.lowercase(Locale.ROOT)) }
             // Get the first actual image
             .firstOrNull {
                 ImageUtil.isImage(it.name) { it.openInputStream() } || it.name == COVER_ARCHIVE_NAME

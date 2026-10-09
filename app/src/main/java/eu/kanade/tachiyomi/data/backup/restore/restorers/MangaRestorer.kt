@@ -38,6 +38,7 @@ import kotlin.math.max
 
 class MangaRestorer(
     private var isSync: Boolean = false,
+    private val libraryReadingOnly: Boolean = false,
 
     private val database: Database = Injekt.get(),
     private val getCategories: GetCategories = Injekt.get(),
@@ -117,6 +118,16 @@ class MangaRestorer(
     }
 
     private suspend fun restoreExistingManga(manga: Manga, dbManga: Manga): Manga {
+        if (libraryReadingOnly) {
+            val incomingIsNewer = (manga.favoriteModifiedAt ?: 0) >= (dbManga.favoriteModifiedAt ?: 0)
+            return updateManga(
+                dbManga.copy(
+                    favorite = if (incomingIsNewer) manga.favorite else dbManga.favorite,
+                    favoriteModifiedAt = if (incomingIsNewer) manga.favoriteModifiedAt else dbManga.favoriteModifiedAt,
+                    version = maxOf(manga.version, dbManga.version),
+                ),
+            )
+        }
         return if (manga.version > dbManga.version) {
             updateManga(dbManga.copyFrom(manga).copy(id = dbManga.id))
         } else {
@@ -173,15 +184,20 @@ class MangaRestorer(
             notes = manga.notes,
             memo = manga.memo.let(MemoColumnAdapter::encode),
         )
+        if (libraryReadingOnly) {
+            database.mangasQueries.updateLibrarySyncMetadata(manga.favoriteModifiedAt, manga.version, manga.id)
+        }
         return manga
     }
 
     private suspend fun restoreNewManga(
         manga: Manga,
     ): Manga {
-        return manga.copy(
-            id = insertManga(manga),
-        )
+        val restored = manga.copy(id = insertManga(manga))
+        if (libraryReadingOnly) {
+            database.mangasQueries.updateLibrarySyncMetadata(restored.favoriteModifiedAt, restored.version, restored.id)
+        }
+        return restored
     }
 
     private suspend fun restoreChapters(manga: Manga, backupChapters: List<BackupChapter>) {
@@ -212,6 +228,13 @@ class MangaRestorer(
     }
 
     private fun updateChapterBasedOnSyncState(chapter: Chapter, dbChapter: Chapter): Chapter {
+        if (libraryReadingOnly) {
+            return dbChapter.copy(
+                read = chapter.read,
+                lastPageRead = chapter.lastPageRead,
+                version = maxOf(chapter.version, dbChapter.version),
+            )
+        }
         return if (isSync) {
             chapter.copy(
                 id = dbChapter.id,
@@ -331,16 +354,18 @@ class MangaRestorer(
         customManga: CustomMangaInfo?,
         // SY <--
     ): Manga {
-        restoreCategories(manga, categories, backupCategories)
+        if (!libraryReadingOnly) restoreCategories(manga, categories, backupCategories)
         restoreChapters(manga, chapters)
-        restoreTracking(manga, tracks)
+        if (!libraryReadingOnly) restoreTracking(manga, tracks)
         restoreHistory(manga, history)
-        restoreExcludedScanlators(manga, excludedScanlators)
+        if (!libraryReadingOnly) restoreExcludedScanlators(manga, excludedScanlators)
         updateManga.awaitUpdateFetchInterval(manga, now, currentFetchWindow)
         // SY -->
         restoreMergedMangaReferencesForManga(manga.id, mergedMangaReferences)
-        flatMetadata?.let { restoreFlatMetadata(manga.id, it) }
-        restoreEditedInfo(customManga?.copy(id = manga.id))
+        if (!libraryReadingOnly) {
+            flatMetadata?.let { restoreFlatMetadata(manga.id, it) }
+            restoreEditedInfo(customManga?.copy(id = manga.id))
+        }
         // SY <--
 
         return manga

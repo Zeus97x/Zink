@@ -67,7 +67,7 @@ actual class LocalSource(
     @Suppress("PrivatePropertyName")
     private val LatestFilters = FilterList(OrderBy.Latest(context))
 
-    override val name: String = context.stringResource(MR.strings.local_source)
+    override val name: String = context.stringResource(MR.strings.zink_local_bookshelf)
 
     override val id: Long = ID
 
@@ -392,13 +392,16 @@ actual class LocalSource(
                     }
                 }
             }
-            .sortedWith { c1, c2 ->
-                c2.name.compareToCaseInsensitiveNaturalOrder(c1.name)
-            }
+            .sortedWith(
+                compareByDescending<SChapter> {
+                    it.chapter_number.takeIf { number -> number.isFinite() && number >= 0f }
+                        ?: Float.NEGATIVE_INFINITY
+                }.thenComparator { c1, c2 -> c2.name.compareToCaseInsensitiveNaturalOrder(c1.name) },
+            )
 
         // Copy the cover from the first chapter found if not available
         if (manga.thumbnail_url.isNullOrBlank()) {
-            chapters.lastOrNull()?.let { chapter ->
+            (chapters.lastOrNull { it.chapter_number >= 0f } ?: chapters.lastOrNull())?.let { chapter ->
                 updateCover(chapter, manga)
             }
         }

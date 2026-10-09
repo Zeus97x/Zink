@@ -329,11 +329,12 @@ class LibraryScreenModel(
                 }
             }
             .launchIn(screenModelScope)
-        syncPreferences.syncService
-            .changes()
+        combine(syncPreferences.syncService.changes(), syncPreferences.zAppsSession.changes()) { _, _ ->
+            syncPreferences.isSyncEnabled()
+        }
             .distinctUntilChanged()
-            .onEach { syncService ->
-                mutableState.update { it.copy(isSyncEnabled = syncService != 0) }
+            .onEach { enabled ->
+                mutableState.update { it.copy(isSyncEnabled = enabled) }
             }
             .launchIn(screenModelScope)
         // SY <--

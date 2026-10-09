@@ -15,6 +15,25 @@ class SyncPreferences(
 
     val lastSyncEtag: Preference<String> = preferenceStore.getString("sync_etag", "")
 
+    val zAppsSession: Preference<String> = preferenceStore.getString(
+        Preference.appStateKey("zapps_session"),
+        "",
+    )
+    private val googleDriveRetired: Preference<Boolean> = preferenceStore.getBoolean(
+        Preference.appStateKey("zink_google_drive_retired"),
+        false,
+    )
+
+    fun retireGoogleDrive() {
+        if (googleDriveRetired.get()) return
+        if (syncService.get() == 2) {
+            syncService.set(0)
+            syncInterval.set(0)
+            lastSyncTimestamp.set(0)
+        }
+        googleDriveRetired.set(true)
+    }
+
     val syncInterval: Preference<Int> = preferenceStore.getInt("sync_interval", 0)
     val syncService: Preference<Int> = preferenceStore.getInt("sync_service", 0)
 
@@ -42,10 +61,11 @@ class SyncPreferences(
     }
 
     fun isSyncEnabled(): Boolean {
-        return syncService.get() != 0
+        return syncService.get() == 1 || (syncService.get() == 3 && zAppsSession.get().isNotBlank())
     }
 
     fun getSyncSettings(): SyncSettings {
+        if (syncService.get() == 3) return eu.kanade.tachiyomi.data.sync.service.LibraryReadingBackup.settings
         return SyncSettings(
             libraryEntries = preferenceStore.getBoolean("library_entries", true).get(),
             categories = preferenceStore.getBoolean("categories", true).get(),

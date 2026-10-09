@@ -44,12 +44,13 @@ class BackupRestorer(
     private val context: Context,
     private val notifier: BackupNotifier,
     private val isSync: Boolean,
+    private val libraryReadingOnly: Boolean = false,
 
     private val database: Database = Injekt.get(),
     private val categoriesRestorer: CategoriesRestorer = CategoriesRestorer(),
     private val preferenceRestorer: PreferenceRestorer = PreferenceRestorer(context),
     private val extensionStoreRestorer: ExtensionStoreRestorer = ExtensionStoreRestorer(),
-    private val mangaRestorer: MangaRestorer = MangaRestorer(isSync),
+    private val mangaRestorer: MangaRestorer = MangaRestorer(isSync, libraryReadingOnly = libraryReadingOnly),
     // SY -->
     private val savedSearchRestorer: SavedSearchRestorer = SavedSearchRestorer(),
     // SY <--
@@ -119,6 +120,10 @@ class BackupRestorer(
             restoreAmount += 1
         }
 
+        // Restore repositories before sources/titles or future extension installation.
+        if (options.extensionStores) {
+            restoreExtensionStores(backup.backupExtensionStores)
+        }
         coroutineScope {
             if (options.categories) {
                 restoreCategories(backup.backupCategories)
@@ -136,9 +141,6 @@ class BackupRestorer(
             }
             if (options.libraryEntries) {
                 restoreManga(backup.backupManga, if (options.categories) backup.backupCategories else emptyList())
-            }
-            if (options.extensionStores) {
-                restoreExtensionStores(backup.backupExtensionStores)
             }
 
             // TODO: optionally trigger online library + tracker update

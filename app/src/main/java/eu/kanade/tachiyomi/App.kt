@@ -207,6 +207,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
             WorkManager.initialize(this, Configuration.Builder().build())
         }
         val syncPreferences: SyncPreferences = Injekt.get()
+        syncPreferences.retireGoogleDrive()
         val syncTriggerOpt = syncPreferences.getSyncTriggerOptions()
         if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppStart) {
             SyncDataJob.startNow(this@App)
@@ -276,6 +277,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
         SecureActivityDelegate.onApplicationStart()
 
         val syncPreferences: SyncPreferences = Injekt.get()
+        syncPreferences.retireGoogleDrive()
         val syncTriggerOpt = syncPreferences.getSyncTriggerOptions()
         if (syncPreferences.isSyncEnabled() && syncTriggerOpt.syncOnAppResume) {
             SyncDataJob.startNow(this@App)

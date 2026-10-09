@@ -36,31 +36,6 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v5
 
-      - name: Include Google Drive login configuration
-        env:
-          CLIENT_SECRETS_TEXT: ${{ secrets.CLIENT_SECRETS_TEXT }}
-        run: |
-          python3 - <<'PY'
-          import json
-          import os
-          import pathlib
-
-          contents = os.environ.get('CLIENT_SECRETS_TEXT', '')
-          if contents.strip():
-              try:
-                  config = json.loads(contents)
-                  client = config.get('installed') or config.get('web') or {}
-                  if not client.get('client_id') or not client.get('client_secret'):
-                      raise ValueError('Missing OAuth client fields')
-              except (ValueError, AttributeError):
-                  raise SystemExit('CLIENT_SECRETS_TEXT must contain a valid Google OAuth client configuration')
-              destination = pathlib.Path('app/src/main/assets/client_secrets.json')
-              destination.parent.mkdir(parents=True, exist_ok=True)
-              destination.write_text(contents)
-          else:
-              print('::warning::CLIENT_SECRETS_TEXT is not configured; Google Drive sign-in will be unavailable.')
-          PY
-
       # Debug signing avoids introducing new signing-key requirements.
       - name: Build and test
         run: |

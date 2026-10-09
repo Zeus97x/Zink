@@ -1063,4 +1063,16 @@
     <string name="zink_migrate_selected">Migrate %1$d titles</string>
     <string name="zink_remove_duplicate_title">Remove duplicate?</string>
     <string name="zink_remove_duplicate_message">Remove “%1$s” from %2$s from your library? Downloads and reading history will be kept.</string>
+    <string name="zink_local_bookshelf">Local bookshelf</string>
+    <string name="zink_bookshelf_folder">Bookshelf folder</string>
+    <string name="zink_bookshelf_open">Open local bookshelf</string>
+    <string name="zink_bookshelf_choose_folder">Choose your bookshelf folder in Settings → Data and storage.</string>
+    <string name="zink_bookshelf_info">Choose the main folder containing one subfolder per series. Place numbered CBZ, CBR, ZIP or EPUB chapters inside each series folder. Add cover.jpg, poster.jpg or folder.jpg beside the chapters for its poster. Without one, the first chapter supplies the cover. Your books stay on this device; backup and sync transfer library data and reading progress.</string>
+    <string name="zink_cloud_sync">ZApps cloud sync</string>
+    <string name="zink_zapps_sign_in">Sign in to ZApps</string>
+    <string name="zink_zapps_sign_out">Sign out</string>
+    <string name="zink_account_email">Email</string>
+    <string name="zink_account_password">Password</string>
+    <string name="zink_zapps_account_info">Use the same email and password as your other ZApps.</string>
+    <string name="zink_cloud_sync_info">Sync only your library, chapter reading progress and reading history between your Android devices. Extensions, repositories, categories and settings stay in your local backups. Local books, posters and downloads stay on each device.</string>
 </resources>

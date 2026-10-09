@@ -73,6 +73,8 @@ import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
 import tachiyomi.presentation.core.screens.EmptyScreenAction
 import tachiyomi.presentation.core.screens.LoadingScreen
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
 import tachiyomi.source.local.isLocal
 
 data object LibraryTab : Tab {
@@ -158,6 +160,14 @@ data object LibraryTab : Tab {
                                     context.stringResource(MR.strings.information_no_entries_found),
                                 )
                             }
+                        }
+                    },
+                    onClickLocalBookshelf = {
+                        if (Injekt.get<tachiyomi.domain.storage.service.StorageManager>().getLocalSourceDirectory() == null) {
+                            navigator.push(eu.kanade.presentation.more.settings.screen.SettingsDataScreen)
+                            context.toast(MR.strings.zink_bookshelf_choose_folder)
+                        } else {
+                            navigator.push(eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen(tachiyomi.source.local.LocalSource.ID, null))
                         }
                     },
                     onClickSyncNow = {

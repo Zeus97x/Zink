@@ -43,7 +43,7 @@ class PreferenceBackupCreator(
     @Suppress("UNCHECKED_CAST")
     private fun Map<String, *>.toBackupPreferences(): List<BackupPreference> {
         return this
-            .filterKeys { !Preference.isAppState(it) }
+            .filterKeys { !Preference.isAppState(it) && !it.startsWith("sync_") }
             .mapNotNull { (key, value) ->
                 when (value) {
                     is Int -> BackupPreference(key, IntPreferenceValue(value))

@@ -41,7 +41,10 @@ class BackupRestoreJob(private val context: Context, workerParams: WorkerParamet
         setForegroundSafely()
 
         return try {
-            BackupRestorer(context, notifier, isSync).restore(uri, options)
+            BackupRestorer(
+                context, notifier, isSync,
+                libraryReadingOnly = inputData.getBoolean(READING_ONLY_KEY, false),
+            ).restore(uri, options)
             Result.success()
         } catch (e: Exception) {
             if (e is CancellationException) {
@@ -79,10 +82,12 @@ class BackupRestoreJob(private val context: Context, workerParams: WorkerParamet
             uri: Uri,
             options: RestoreOptions,
             sync: Boolean = false,
+            libraryReadingOnly: Boolean = false,
         ) {
             val inputData = workDataOf(
                 LOCATION_URI_KEY to uri.toString(),
                 SYNC_KEY to sync,
+                READING_ONLY_KEY to libraryReadingOnly,
                 OPTIONS_KEY to options.asBooleanArray(),
             )
             val request = OneTimeWorkRequestBuilder<BackupRestoreJob>()
@@ -103,3 +108,5 @@ private const val TAG = "BackupRestore"
 private const val LOCATION_URI_KEY = "location_uri" // String
 private const val SYNC_KEY = "sync" // Boolean
 private const val OPTIONS_KEY = "options" // BooleanArray
+
+private const val READING_ONLY_KEY = "library_reading_only" // Boolean

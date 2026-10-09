@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.data.sync
 
 import android.content.Context
 import android.net.Uri
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.async.coroutines.awaitAsList
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.create.BackupCreator
@@ -12,8 +13,8 @@ import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
-import eu.kanade.tachiyomi.data.sync.service.GoogleDriveSyncService
 import eu.kanade.tachiyomi.data.sync.service.SyncData
+import eu.kanade.tachiyomi.data.sync.service.SupabaseSyncService
 import eu.kanade.tachiyomi.data.sync.service.SyncYomiSyncService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -56,6 +57,7 @@ class SyncManager(
         NONE(0),
         SYNCYOMI(1),
         GOOGLE_DRIVE(2),
+        SUPABASE(3),
         ;
 
         companion object {
@@ -78,7 +80,11 @@ class SyncManager(
         }
 
         val syncOptions = syncPreferences.getSyncSettings()
-        val databaseManga = getAllMangaThatNeedsSync()
+        val databaseManga = getAllMangaThatNeedsSync().let { mangas ->
+            if (syncPreferences.syncService.get() == SyncService.SUPABASE.value) {
+                database.mangasQueries.getLibraryReadingSyncManga(::mapManga).awaitAsList()
+            } else mangas
+        }
 
         val backupOptions = BackupOptions(
             libraryEntries = syncOptions.libraryEntries,
@@ -131,8 +137,12 @@ class SyncManager(
                 )
             }
 
+            SyncService.SUPABASE -> {
+                SupabaseSyncService(context, json, syncPreferences)
+            }
+
             SyncService.GOOGLE_DRIVE -> {
-                GoogleDriveSyncService(context, json, syncPreferences)
+                error("Google Drive sync has been retired. Choose ZApps cloud sync in Settings.")
             }
 
             else -> {
@@ -164,7 +174,9 @@ class SyncManager(
         }
 
         // Check if it's first sync based on lastSyncTimestamp
-        if (syncPreferences.lastSyncTimestamp.get() == 0L && databaseManga.isNotEmpty()) {
+        if (syncPreferences.syncService.get() != SyncService.SUPABASE.value &&
+            syncPreferences.lastSyncTimestamp.get() == 0L && databaseManga.isNotEmpty()
+        ) {
             // It's first sync no need to restore data. (just update remote data)
             syncPreferences.lastSyncTimestamp.set(Date().time)
             notifier.showSyncSuccess("Updated remote data successfully")
@@ -228,6 +240,7 @@ class SyncManager(
                 context,
                 backupUri,
                 sync = true,
+                libraryReadingOnly = syncPreferences.syncService.get() == SyncService.SUPABASE.value,
                 options = RestoreOptions(
                     appSettings = syncOptions.appSettings,
                     sourceSettings = syncOptions.sourceSettings,
@@ -280,6 +293,21 @@ class SyncManager(
     private suspend fun isMangaDifferent(localManga: Manga, remoteManga: BackupManga): Boolean {
         val localChapters = database.chaptersQueries.getChaptersByMangaId(localManga.id, 0).awaitAsList()
         val localCategories = getCategories.await(localManga.id).map { it.order }
+        if (syncPreferences.syncService.get() == SyncService.SUPABASE.value) {
+            if (localManga.favorite != remoteManga.favorite ||
+                localManga.favoriteModifiedAt != remoteManga.favoriteModifiedAt ||
+                areChaptersDifferent(localChapters, remoteManga.chapters)
+            ) {
+                return true
+            }
+            for (history in remoteManga.history) {
+                val stored = database.historyQueries.getHistoryByChapterUrl(localManga.id, history.url).awaitAsOneOrNull()
+                if (stored == null || (stored.last_read?.time ?: 0L) < history.lastRead || stored.time_read < history.readDuration) {
+                    return true
+                }
+            }
+            return false
+        }
 
         if (areChaptersDifferent(localChapters, remoteManga.chapters)) {
             return true
@@ -308,7 +336,9 @@ class SyncManager(
             val remoteChapter = remoteChapterMap[url]
 
             // If a matching remote chapter doesn't exist, or the version numbers are different, consider them different
-            if (remoteChapter == null || localChapter.version != remoteChapter.version) {
+            if (remoteChapter == null || localChapter.version != remoteChapter.version ||
+                localChapter.read != remoteChapter.read || localChapter.last_page_read != remoteChapter.lastPageRead
+            ) {
                 return true
             }
         }
@@ -339,6 +369,11 @@ class SyncManager(
             backup.backupManga.forEach { remoteManga ->
                 val compositeKey = Pair(remoteManga.source, remoteManga.url)
                 val localManga = localMangaMap[compositeKey]
+                if (syncPreferences.syncService.get() == SyncService.SUPABASE.value) {
+                    // History-only titles outside the library must also restore their reading data.
+                    if (localManga == null || isMangaDifferent(localManga, remoteManga)) favorites.add(remoteManga)
+                    return@forEach
+                }
                 when {
                     // Checks if the manga is in favorites and needs updating or adding
                     remoteManga.favorite -> {

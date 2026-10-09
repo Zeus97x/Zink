@@ -53,6 +53,7 @@ fun LibraryToolbar(
     onClickGlobalUpdate: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
     onClickSyncNow: () -> Unit,
+    onClickLocalBookshelf: () -> Unit,
     // SY -->
     onClickSyncExh: (() -> Unit)?,
     isSyncEnabled: Boolean,
@@ -77,6 +78,7 @@ fun LibraryToolbar(
         onClickGlobalUpdate = onClickGlobalUpdate,
         onClickOpenRandomManga = onClickOpenRandomManga,
         onClickSyncNow = onClickSyncNow,
+        onClickLocalBookshelf = onClickLocalBookshelf,
         // SY -->
         onClickSyncExh = onClickSyncExh,
         isSyncEnabled = isSyncEnabled,
@@ -96,6 +98,7 @@ private fun LibraryRegularToolbar(
     onClickGlobalUpdate: () -> Unit,
     onClickOpenRandomManga: () -> Unit,
     onClickSyncNow: () -> Unit,
+    onClickLocalBookshelf: () -> Unit,
     // SY -->
     onClickSyncExh: (() -> Unit)?,
     isSyncEnabled: Boolean,
@@ -162,6 +165,10 @@ private fun LibraryRegularToolbar(
                         icon = Icons.Outlined.FilterList,
                         iconTint = filterTint,
                         onClick = onClickFilter,
+                    ),
+                    AppBar.OverflowAction(
+                        title = stringResource(MR.strings.zink_local_bookshelf),
+                        onClick = onClickLocalBookshelf,
                     ),
                     AppBar.OverflowAction(
                         title = stringResource(MR.strings.zink_card_size),

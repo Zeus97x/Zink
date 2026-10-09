@@ -1,6 +1,6 @@
 # Zink Phase Progress
 
-All changes are local. Do not push, create a release, or build an APK until requested.
+The October 9 user approval authorizes publication, shared-backend activation and the APK build for the current local bookshelf/cloud sync pass. Earlier phase notes below are historical.
 
 ## Phases 1 and 2: Migration Batching and Matching
 
@@ -142,3 +142,26 @@ authorized build, without triggering a separate push or build now.
   push-and-link preference; do not monitor the build unless requested.
 
 One follow-up item remains, queued for the next build.
+
+## Current pass — October 9, 2026 (supersedes Google Drive follow-up)
+
+1. Local bookshelf: implemented in source. Independent main-folder picker, one folder per series, numbered chapters, cover/poster/folder images, online-style source cards/title reader, Library overflow entry. Existing local source ID/reading data preserved; old Browse path hidden. Compilation/device testing pending.
+2. Backup/cloud sync: client implemented with shared ZApps sign-in and existing auto-sync triggers. Preserve extension repositories during merge; restore them first. Google Drive retired and existing enabled preference disabled once to stop missing-config notifications. Existing local backup compatibility remains. Supabase table/function SQL prepared but NOT DEPLOYED: automatic approval review requires explicit approval for the precise change to the shared ZPet project. End-to-end sync remains blocked.
+3. Screenshot fix: Updates rows no longer animate across one another during bulk insertion; flexible heights and fixed cover size. Device verification pending. No chapter-number cutoff: explicitly cancelled because fan-colour releases may have much higher numbers than the main release. Ordinary chapter detection unchanged.
+4. APK: not started. Unit-test attempt blocked at Gradle download; static checks passed. Preserve model-change pause before invoking release build. Source checkpoint uses [skip ci].
+
+Next priority after cloud sync: missing-extension restore from backed-up repositories, one Install button/action and Android confirmation at a time; keep existing overflow action. Planned only.
+
+See DEVELOPMENT_LOG.md for affected paths, actual verification, exact backend approval blocker and recovery instructions. One final build/test phase remains after backend activation.
+
+### Source publication blocked (October 9)
+
+Automatic approval review also rejected uploading the complete prepared source to Zeus97x/Zink because explicit export approval is required. Source is local only; no GitHub tree/commit/ref or APK was created. Ask for one approval covering source upload to Zeus97x/Zink and the prepared private table/function on the shared ZPet Supabase project. Source upload must use [skip ci]; preserve model-change pause before APK build. See DEVELOPMENT_LOG.md for the checkpoint and actual verification.
+
+## October 9 final scope and approval
+
+- Local bookshelf: implemented; phone validation pending.
+- Cloud sync: only library membership and reading progress/history. Other data is kept in local backups. Fresh snapshot construction strips configuration and bookmarks; cloud restore preserves local title/chapter settings. Include history-only titles and library removals, preserve membership timestamps after SQLite favorite triggers, merge history without adding duplicated durations.
+- Backend activation: deployed after explicit approval; rollback-only CAS and authenticated owner-isolation checks passed. No test snapshots remain.
+- APK: source push/build is authorized. CI compiles, runs JVM tests and publishes Zink.apk if successful. Local Gradle bootstrap is blocked; do not claim compilation or APK success before CI confirms it. Give the workflow link and do not monitor unless asked.
+- No chapter cutoff; online update matching remains unchanged. Updates row spacing changes still require phone testing.

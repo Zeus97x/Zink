@@ -294,3 +294,17 @@ getIdByUrlAndSource:
 SELECT _id
 FROM mangas
 WHERE url = :url AND source = :source;
+
+-- Cloud sync includes removals and history-only titles as well as the current library.
+getLibraryReadingSyncManga:
+SELECT * FROM mangas
+WHERE favorite = 1 OR favorite_modified_at IS NOT NULL OR _id IN (
+    SELECT chapters.manga_id FROM chapters
+    LEFT JOIN history ON history.chapter_id = chapters._id
+    WHERE chapters.read = 1 OR chapters.last_page_read != 0 OR history._id IS NOT NULL
+);
+
+-- Apply after favorite updates so the local favorite trigger cannot replace the remote timestamp.
+updateLibrarySyncMetadata:
+UPDATE mangas SET favorite_modified_at = :favoriteModifiedAt, is_syncing = 1, version = :version
+WHERE _id = :mangaId;

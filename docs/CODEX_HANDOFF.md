@@ -1,3 +1,15 @@
+# Current status — October 9, 2026
+
+The user explicitly approved source publication to Zeus97x/Zink, the isolated sync schema on shared ZPet, and continuing the APK build. The earlier publication/backend approval blockers are resolved; do not ask again. Latest cloud scope is ONLY library membership, chapter read/progress and reading history. Extensions, repositories, categories, tracking, settings, bookmarks and notes stay in local backups. The cloud whitelist also strips these fields from old remote snapshots before merging/restoring.
+
+Migration zink_owner_sync is deployed on sihbduemrgwqdznkxykx. Rollback-only authenticated SQL tests passed initial insert, conflict rejection, revision increments, owner isolation and denied cross-owner writes. RLS is enabled with three owner policies; anonymous SELECT/RPC access is revoked. No test snapshots remain. Existing unrelated ZPet advisor findings were not changed.
+
+Local bookshelf and Updates layout changes are ready for the authorized source push and APK workflow. Gradle distribution download is unavailable here, so Android compilation, JVM tests and device behavior remain unverified until CI/phone testing. Give the build link after pushing; do not monitor unless asked. Read the latest DEVELOPMENT_LOG.md entry for precise paths and checks.
+
+The user cancelled chapter-number cutoffs because fan-colour releases can exceed the main release range. Online chapter matching is unchanged. Do not hide chapters or mark them read. Missing extension installation remains a separate follow-up.
+
+---
+
 # Zink: Codex handoff
 
 Repository: https://github.com/Zeus97x/Zink
@@ -59,3 +71,7 @@ the follow-up remain pending.
   device identifiers to the public repository; the diagnosis above is sufficient.
 
 See ZINK_PHASES.md for feature details and the next-build checklist.
+
+### Source publication blocked (October 9)
+
+Automatic approval review also rejected uploading the complete prepared source to Zeus97x/Zink because explicit export approval is required. Source is local only; no GitHub tree/commit/ref or APK was created. Ask for one approval covering source upload to Zeus97x/Zink and the prepared private table/function on the shared ZPet Supabase project. Source upload must use [skip ci]; preserve model-change pause before APK build. See DEVELOPMENT_LOG.md for the checkpoint and actual verification.

@@ -31,6 +31,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
     private val notifier = SyncNotifier(context)
 
     override suspend fun doWork(): Result {
+        if (!Injekt.get<SyncPreferences>().isSyncEnabled()) return Result.success()
         if (tags.contains(TAG_AUTO)) {
             if (!context.isOnline()) {
                 return Result.retry()
@@ -80,7 +81,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
             val syncPreferences = Injekt.get<SyncPreferences>()
             val interval = prefInterval ?: syncPreferences.syncInterval.get()
 
-            if (interval > 0) {
+            if (interval > 0 && syncPreferences.isSyncEnabled()) {
                 val request = PeriodicWorkRequestBuilder<SyncDataJob>(
                     interval.toLong(),
                     TimeUnit.MINUTES,
@@ -98,6 +99,7 @@ class SyncDataJob(private val context: Context, workerParams: WorkerParameters) 
         }
 
         fun startNow(context: Context, manual: Boolean = false) {
+            if (!Injekt.get<SyncPreferences>().isSyncEnabled()) return
             val wm = context.workManager
             if (wm.isRunning(TAG_JOB)) {
                 // Already running either as a scheduled or manual job

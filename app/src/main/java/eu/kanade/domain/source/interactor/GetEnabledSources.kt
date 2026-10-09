@@ -44,7 +44,9 @@ class GetEnabledSources(
             }
             val sourcesInSourceCategories = sourcesAndCategories.map { it.first }
             sources
-                .filter { it.lang in enabledLanguages || it.isLocal() }
+                // The library overflow is the single entry point for local books.
+                .filterNot { it.isLocal() }
+                .filter { it.lang in enabledLanguages }
                 .filterNot { it.id.toString() in disabledSources || it.id in BlacklistedSources.HIDDEN_SOURCES }
                 .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
                 .flatMap {

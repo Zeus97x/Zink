@@ -72,6 +72,10 @@ abstract class SyncService(
             backupSources = mergedSourcesList,
             backupPreferences = mergedPreferencesList,
             backupSourcePreferences = mergedSourcePreferencesList,
+            backupExtensionStores = (
+                localSyncData.backup?.backupExtensionStores.orEmpty() +
+                    remoteSyncData.backup?.backupExtensionStores.orEmpty()
+                ).distinctBy { it.indexUrl },
 
             // SY -->
             backupSavedSearches = mergedSavedSearchesList,
