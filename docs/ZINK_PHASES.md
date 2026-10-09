@@ -173,3 +173,7 @@ Initial APK run 37887215949 failed compiling LocalCoverManager.kt because nameWi
 ### October 9 repository restore compilation repair
 
 Build 37888040855 passed source-local then failed app compilation: restoreExtensionStores requires a CoroutineScope receiver. The call now runs inside the existing coroutineScope and joins before other restore tasks. Rebuild is authorized; JVM tests and APK success remain pending.
+
+### October 9 local automatic retention
+
+User reports sync working. Automatic backups now keep the newest successful backup, with unique filenames and old-file cleanup only after validation. Source checks passed; compilation and device storage checks await the next build. Extension APK inventory/reinstall is still pending; existing backups contain repositories/source IDs, not APK binaries. Do not suggest uninstall testing until Install is implemented.

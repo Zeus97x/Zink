@@ -39,6 +39,7 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 class BackupCreator(
     private val context: Context,
@@ -62,20 +63,20 @@ class BackupCreator(
 
     suspend fun backup(uri: Uri, options: BackupOptions): String {
         var file: UniFile? = null
+        var previousAutoBackups: List<UniFile> = emptyList()
         try {
             file = if (isAutoBackup) {
                 // Get dir of file and create
                 val dir = UniFile.fromUri(context, uri)
 
-                // Delete older backups
-                dir?.listFiles { _, filename -> FILENAME_REGEX.matches(filename) }
+                // Keep previous backups until the replacement has been written and validated.
+                previousAutoBackups = dir?.listFiles { _, filename -> FILENAME_REGEX.matches(filename) }
                     .orEmpty()
-                    .sortedByDescending { it.name }
-                    .drop(MAX_AUTO_BACKUPS - 1)
-                    .forEach { it.delete() }
+                    .filter { it.isFile }
 
-                // Create new file to place backup
-                dir?.createFile(getFilename())
+                // A unique name prevents retries within the same minute overwriting a good backup.
+                val filename = getFilename().removeSuffix(".tachibk") + "_${UUID.randomUUID()}.tachibk"
+                dir?.createFile(filename)
             } else {
                 UniFile.fromUri(context, uri)
             }
@@ -123,6 +124,16 @@ class BackupCreator(
 
             if (isAutoBackup) {
                 backupPreferences.lastAutoBackupTimestamp.set(Instant.now().toEpochMilli())
+                // Cleanup is best-effort: inability to delete an old file must not delete the new backup.
+                previousAutoBackups.filter { it.uri != fileUri }.forEach { previous ->
+                    try {
+                        if (!previous.delete()) {
+                            logcat(LogPriority.WARN) { "Could not remove an older automatic backup" }
+                        }
+                    } catch (e: Exception) {
+                        logcat(LogPriority.WARN, e) { "Could not remove an older automatic backup" }
+                    }
+                }
             }
 
             return fileUri.toString()
@@ -176,8 +187,10 @@ class BackupCreator(
     // SY <--
 
     companion object {
-        private const val MAX_AUTO_BACKUPS: Int = 4
-        private val FILENAME_REGEX = """${BuildConfig.APPLICATION_ID}_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}.tachibk""".toRegex()
+        private val FILENAME_REGEX = (
+            """${Regex.escape(BuildConfig.APPLICATION_ID)}_\d{4}-\d{2}-\d{2}_\d{2}-\d{2}""" +
+                """(?:_[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})?\.tachibk"""
+        ).toRegex()
 
         fun getFilename(): String {
             val date = SimpleDateFormat("yyyy-MM-dd_HH-mm", Locale.ENGLISH).format(Date())

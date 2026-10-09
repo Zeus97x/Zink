@@ -6,6 +6,8 @@ Migration zink_owner_sync is deployed on sihbduemrgwqdznkxykx. Rollback-only aut
 
 Local bookshelf, Updates layout and library/reading-only sync were published in c97c90d2249008959bc0c0618dc0c004f8bc50ae. Initial build 37887215949 failed nullable cover filenames; fixed in 606399b64379a5efd8cdc2c14f1cc12fa19d021c. Replacement build 37888040855 got past source-local, then failed app compilation because repository restore lacked its CoroutineScope receiver. Latest fix moves that call inside coroutineScope and joins the repository Job before launching remaining restore tasks. Replacement APK build is authorized; do not monitor unless asked. Local Gradle bootstrap is unavailable. JVM tests, APK release and phone behavior remain pending. Read the latest DEVELOPMENT_LOG.md entry for exact failure evidence and paths.
 
+Latest local-backup change: retain only the newest successful automatic backup. UUID filenames avoid same-minute overwrites; old app backups in the auto destination are removed after writing/validation, and cleanup failures preserve the new file. Source checks passed; compile/SAF device tests remain pending next build. User reports sync working. Extension backups currently save repositories and source identity, not installed APKs/reinstallation; the one-at-a-time Install feature remains planned.
+
 The user cancelled chapter-number cutoffs because fan-colour releases can exceed the main release range. Online chapter matching is unchanged. Do not hide chapters or mark them read. Missing extension installation remains a separate follow-up.
 
 ---
