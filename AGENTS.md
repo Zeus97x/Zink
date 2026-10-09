@@ -13,3 +13,6 @@ Repository: Zeus97x/Zink. Preserve project identity and existing features. Read 
 - Commit source/assets/configuration with the log: this Markdown file explains recovery but cannot replace missing project files. Record missing source honestly.
 - Never record passwords, API keys, tokens, signing keys or other secrets. Refer only to configuration names and approved secret storage.
 - When creating another Zeus app or website repository, carry over this rule and initialize its own `DEVELOPMENT_LOG.md`.
+
+## Permanent AI development team (2026-10-09)
+Read `.github/ai/README.md`, PROJECT_STATUS.md, TASK_BOARD.md and ROADMAP.md before development. The user's current master workflow controls AI responsibilities, approval, usage, phases and PR integration; initialize the same workspace for future repos. Preserve existing project-specific guidance and logs. Current user instructions take precedence over historical rules.

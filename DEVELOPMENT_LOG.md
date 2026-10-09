@@ -194,3 +194,13 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 
 - User explicitly requests building the published sync fix and testing the permanent signing setup. Base master is 65bbd48d3bd28d382294dd6543358a2324256031. Workflow comment-only change triggers one new master build; signing configuration/key and increasing run-number versionCode remain unchanged.
 - GitHub CI will compile the APK and run JVM tests, including compact snapshot regression cases. Results are pending. User will install this APK over the first permanently signed APK and confirm retained library/settings and actual cloud sync. No claim of successful update compatibility before the phone test.
+
+
+## 2026-10-09 — AI-001 permanent AI workspace
+- Responsible AI: Codex. User authorized rollout across existing/future GitHub projects.
+- Baseline 5fa043e1e5a92c0d9c84d42d6f715df6054c774b; branch ai/codex/ai-workspace; user-approved PR merge required.
+- Changed .github/ai/** with shared policy/status/log index/roadmap/task board/usage strategy, all requested task/handoff/decision folders, 18-field task and full handoff/completion templates. Appended AGENTS guidance; preserved all previous logs and product source.
+- AI-001 in REVIEW; legacy reconciliation AI-002 in BACKLOG, proposed Claude handoff, no approved assignment. Existing notes linked; current product version/phase/build not freshly verified in documentation rollout.
+- Verification: read tree/default head, root AGENTS and log; checked open PR snapshot and absence of existing .github/ai paths. Post-upload tree verification required. No app tests or builds required/performed; [skip ci] avoids unnecessary CI.
+- Source, assets, application IDs, signing and workflows unchanged. No credential values added.
+- Recovery: approve workspace PR, then review latest source/legacy notes and reconcile active tasks before implementation. Other AI work may have advanced since baseline; do not overwrite it.
