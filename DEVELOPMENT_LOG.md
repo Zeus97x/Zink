@@ -114,3 +114,12 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 - Published source commit c97c90d2249008959bc0c0618dc0c004f8bc50ae to Zeus97x/Zink master after approval. Uploaded tree f5c4f198229190b0c4e451e5f947eeddcf2fbc7d exactly matches the staged local tree, including existing executable file modes; remote ref readback confirmed the commit.
 - Confirmed one launch of APK workflow https://github.com/Zeus97x/Zink/actions/runs/37887215949 (in_progress). No ongoing monitoring; build/tests and Zink.apk release outcome remain pending. No APK success claim.
 - Documentation-only follow-up records publication and launch in DEVELOPMENT_LOG.md and docs/CODEX_HANDOFF.md; uses skip-ci and does not trigger another build.
+
+## 2026-10-09 — Fix nullable local cover names after failed APK build
+
+- Request: repair failed APK run https://github.com/Zeus97x/Zink/actions/runs/37887215949 and start a fresh build.
+- Failure evidence: job 113679805674 stopped at :source-local:compileAndroidMain. Kotlin reported nullable String receiver errors in LocalCoverManager.kt at lines 25 and 26. APK preparation, upload and release were skipped; unit tests had not run.
+- Fix: safely lowercase nullable nameWithoutExtension with Locale.ROOT and use an empty fallback. Unnamed files fail the cover-name filter; named cover/poster/folder files retain the requested priority. No sync, chapter matching or backup behavior changes.
+- Verification: inspected all compiler error lines in the failed job log; both reported receiver errors are addressed. git diff --check passed; targeted source check confirms both lookups use safe calls. Full Android compilation remains delegated to the replacement CI build because local Gradle distribution bootstrap is unavailable. Do not claim APK success until CI completes.
+- Exact paths: source-local/src/androidMain/kotlin/tachiyomi/source/local/image/LocalCoverManager.kt; DEVELOPMENT_LOG.md; docs/CODEX_HANDOFF.md; docs/ZINK_PHASES.md.
+- Next: publish this fix on master without skip-ci and give the replacement APK build link; do not monitor unless asked. Device checks for local folder covers and library/reading sync remain pending.

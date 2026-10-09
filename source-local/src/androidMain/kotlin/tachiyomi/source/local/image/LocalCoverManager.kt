@@ -22,8 +22,8 @@ actual class LocalCoverManager(
     actual fun find(mangaUrl: String): UniFile? {
         val coverNames = listOf("cover", "poster", "folder")
         return fileSystem.getFilesInMangaDirectory(mangaUrl)
-            .filter { it.isFile && it.nameWithoutExtension.lowercase(Locale.ROOT) in coverNames }
-            .sortedBy { coverNames.indexOf(it.nameWithoutExtension.lowercase(Locale.ROOT)) }
+            .filter { it.isFile && it.nameWithoutExtension?.lowercase(Locale.ROOT).orEmpty() in coverNames }
+            .sortedBy { coverNames.indexOf(it.nameWithoutExtension?.lowercase(Locale.ROOT).orEmpty()) }
             // Get the first actual image
             .firstOrNull {
                 ImageUtil.isImage(it.name) { it.openInputStream() } || it.name == COVER_ARCHIVE_NAME

@@ -165,3 +165,7 @@ Automatic approval review also rejected uploading the complete prepared source t
 - Backend activation: deployed after explicit approval; rollback-only CAS and authenticated owner-isolation checks passed. No test snapshots remain.
 - APK: source push/build is authorized. CI compiles, runs JVM tests and publishes Zink.apk if successful. Local Gradle bootstrap is blocked; do not claim compilation or APK success before CI confirms it. Give the workflow link and do not monitor unless asked.
 - No chapter cutoff; online update matching remains unchanged. Updates row spacing changes still require phone testing.
+
+### October 9 APK compilation repair
+
+Initial APK run 37887215949 failed compiling LocalCoverManager.kt because nameWithoutExtension is nullable. Both new lowercase lookups now use safe calls and an empty fallback, preserving cover/poster/folder priority. Replacement CI build is authorized; APK and JVM test outcomes are still pending.
