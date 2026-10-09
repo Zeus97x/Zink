@@ -55,9 +55,10 @@ jobs:
               raise SystemExit('Missing GitHub Actions secrets: ' + ', '.join(missing))
           key = Path(os.environ['RUNNER_TEMP']) / 'zink-signing.jks'
           try:
-              decoded = base64.b64decode(os.environ['SIGNING_KEYSTORE_BASE64'], validate=True)
+              encoded = ''.join(os.environ['SIGNING_KEYSTORE_BASE64'].split())
+              decoded = base64.b64decode(encoded, validate=True)
           except ValueError:
-              raise SystemExit('SIGNING_KEYSTORE_BASE64 is invalid Base64')
+              raise SystemExit('SIGNING_KEYSTORE_BASE64 is invalid Base64. Replace its value with the entire contents of SIGNING_KEYSTORE_BASE64.txt from the private setup ZIP; do not paste the filename or upload the JKS.')
           if not decoded:
               raise SystemExit('Signing keystore is empty')
           key.write_bytes(decoded)

@@ -162,3 +162,9 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 - User reports adding all four GitHub Actions secrets and explicitly authorizes uploading the prepared changes and building the APK. Earlier auto-review publication blocker is resolved by this explicit authorization.
 - Re-ran signing preparation checks and git diff --check successfully. Publish the six prepared files with a normal commit to trigger master APK workflow once. No signing credentials are included in the source payload.
 - Build/Gradle compilation and phone update behavior remain pending; do not monitor the run unless asked. Give the user the run link after confirming launch. First permanently signed installation likely requires a backed-up reinstall.
+
+## 2026-10-09 — Normalize pasted signing Base64
+
+- Failed run 37941766706, job 113857664336, stopped before Gradle at Restore permanent signing key: SIGNING_KEYSTORE_BASE64 is invalid Base64. All four secret variables were nonempty; no APK built. Actual secret value is unavailable, so whitespace is a possible cause, not confirmed.
+- Normalize whitespace in the Base64 value before strict decoding; retain invalid-character checks and clarify the corrective copy/paste instruction. No changes to the permanent key or password requirements.
+- Verification: restore script checks passed including round-trip and missing/invalid values, plus whitespace-wrapped actual key round-trip. Publish workflow and log fix to trigger one replacement build. If still invalid, user must replace this one secret with the complete text file contents; connector cannot edit secrets.
