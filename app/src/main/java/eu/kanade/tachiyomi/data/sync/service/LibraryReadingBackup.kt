@@ -25,13 +25,13 @@ internal object LibraryReadingBackup {
 
     fun restrict(backup: Backup): Backup = Backup(
         backupManga = backup.backupManga.map { manga ->
+            val historyUrls = manga.history.mapTo(HashSet()) { it.url }
             BackupManga(
                 source = manga.source,
                 url = manga.url,
                 title = manga.title,
                 artist = manga.artist,
                 author = manga.author,
-                description = manga.description,
                 genre = manga.genre,
                 status = manga.status,
                 thumbnailUrl = manga.thumbnailUrl,
@@ -40,18 +40,22 @@ internal object LibraryReadingBackup {
                 lastModifiedAt = manga.lastModifiedAt,
                 favoriteModifiedAt = manga.favoriteModifiedAt,
                 version = manga.version,
-                initialized = manga.initialized,
+                // Metadata can be fetched from the source on a newly synced device.
+                // Existing local metadata is preserved by the reading-only restorer.
+                initialized = false,
                 // Merged title relationships are part of library identity, not extension configuration.
                 mergedMangaReferences = manga.mergedMangaReferences,
-                chapters = manga.chapters.map { chapter ->
+                // Omitted chapters have no reading state to send. Keep changed unread entries
+                // so clearing progress on one device still reaches the other device.
+                chapters = manga.chapters.filter { chapter ->
+                    chapter.read || chapter.lastPageRead != 0L || chapter.version != 0L ||
+                        chapter.lastModifiedAt != 0L || chapter.url in historyUrls
+                }.map { chapter ->
                     BackupChapter(
                         url = chapter.url,
                         name = chapter.name,
-                        scanlator = chapter.scanlator,
                         read = chapter.read,
                         lastPageRead = chapter.lastPageRead,
-                        dateFetch = chapter.dateFetch,
-                        dateUpload = chapter.dateUpload,
                         chapterNumber = chapter.chapterNumber,
                         sourceOrder = chapter.sourceOrder,
                         lastModifiedAt = chapter.lastModifiedAt,

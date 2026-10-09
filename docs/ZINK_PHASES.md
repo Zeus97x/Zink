@@ -196,3 +196,7 @@ User clarified that restoration must display a list of extensions with Install o
 - Private key and copy-paste values delivered separately, excluded from Git.
 - Pending: user adds secrets, next authorized APK build, backed-up migration reinstall if required, then second-build update test confirming library/settings retention.
 - No APK built for preparation. In-app updater remains deferred; its existing upstream source is not Zink.
+
+## Sync size fix — prepared October 9
+
+Cloud whitelist now omits untouched unread catalogue chapters while retaining read/progress, versioned/timestamped unread resets and history references. Descriptions and chapter scanlator/fetch/upload dates stay local. Existing snapshots remain compatible. Local backups unchanged. Added regression tests are pending CI because local Gradle distribution download failed. SQL trigger checks and whitespace passed. Source-only publication uses skip-ci; next authorized APK is intended to test update over the first permanent-key install plus sync with the user's actual library. Existing 64 MiB decoded/8 MiB compressed bounds remain; a large changed-state library may still need batched sync.

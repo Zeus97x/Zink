@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import kotlinx.serialization.protobuf.ProtoBuf
 
 class LibraryReadingBackupTest {
     @Test
@@ -58,5 +59,62 @@ class LibraryReadingBackupTest {
         assertEquals(BackupHistory("/chapter", 100, 70), manga.history.single())
         assertEquals(manga.history, LibraryReadingBackup.merge(merged, remote).backupManga.single().history)
         assertTrue(local.backupManga.single().chapters.single().read)
+    }
+    @Test
+    fun omitsUntouchedUnreadCatalogueButKeepsResetsAndHistory() {
+        val original = Backup(listOf(BackupManga(
+            source = 1, url = "/series", description = "Large source description",
+            chapters = listOf(
+                BackupChapter("/untouched", "Untouched"),
+                BackupChapter("/read", "Read", read = true),
+                BackupChapter("/progress", "Progress", lastPageRead = 3),
+                BackupChapter("/reset", "Reset", version = 2),
+                BackupChapter("/legacy-reset", "Legacy reset", lastModifiedAt = 100),
+                BackupChapter("/history", "History"),
+            ),
+            history = listOf(BackupHistory("/history", 123, 60)),
+        )))
+        val compact = LibraryReadingBackup.restrict(original)
+        assertEquals(
+            listOf("/read", "/progress", "/reset", "/legacy-reset", "/history"),
+            compact.backupManga.single().chapters.map { it.url },
+        )
+        assertEquals(null, compact.backupManga.single().description)
+        assertEquals(6, original.backupManga.single().chapters.size)
+        assertEquals("Large source description", original.backupManga.single().description)
+    }
+
+    @Test
+    fun compactionKeepsLibraryTitlesEvenWithoutReadingState() {
+        val original = Backup(listOf(BackupManga(
+            source = 1, url = "/unread-series", title = "Unread series", favorite = true,
+            chapters = (1..10000).map { BackupChapter("/chapter/$it", "Chapter $it") },
+        )))
+        val compact = LibraryReadingBackup.restrict(original)
+        assertTrue(compact.backupManga.single().favorite)
+        assertEquals("Unread series", compact.backupManga.single().title)
+        assertTrue(compact.backupManga.single().chapters.isEmpty())
+        assertEquals(10000, original.backupManga.single().chapters.size)
+        val originalBytes = ProtoBuf.encodeToByteArray(Backup.serializer(), original)
+        val compactBytes = ProtoBuf.encodeToByteArray(Backup.serializer(), compact)
+        assertTrue(compactBytes.size < originalBytes.size / 100)
+        assertTrue(CloudBackupCodec.decode(CloudBackupCodec.encode(compactBytes)).contentEquals(compactBytes))
+    }
+
+    @Test
+    fun sparseSnapshotStillPropagatesNewerUnreadReset() {
+        val local = Backup(listOf(BackupManga(
+            source = 1, url = "/series",
+            chapters = listOf(BackupChapter("/chapter", "Chapter", read = true, version = 1)),
+        )))
+        val remote = Backup(listOf(BackupManga(
+            source = 1, url = "/series",
+            chapters = listOf(BackupChapter("/chapter", "Chapter", version = 2)),
+        )))
+        val merged = LibraryReadingBackup.merge(local, remote)
+        assertFalse(merged.backupManga.single().chapters.single().read)
+        assertEquals(2L, merged.backupManga.single().chapters.single().version)
+        assertEquals(merged.backupManga.single().chapters.map { it.url },
+            LibraryReadingBackup.restrict(merged).backupManga.single().chapters.map { it.url })
     }
 }

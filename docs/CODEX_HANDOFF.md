@@ -90,3 +90,7 @@ The in-app updater remains disabled for debug and still points upstream; GitHub 
 ### First permanently signed build authorization
 
 October 9: user confirms entering four signing secrets and authorizes publication/build. Publish prepared configuration without skip-ci to trigger one APK run, then provide its link. Do not monitor unless asked. Secret contents are not readable through the connector; the build validates them. Earlier source publication denial has been resolved by explicit approval.
+
+## Sync size fix — prepared October 9
+
+Cloud whitelist now omits untouched unread catalogue chapters while retaining read/progress, versioned/timestamped unread resets and history references. Descriptions and chapter scanlator/fetch/upload dates stay local. Existing snapshots remain compatible. Local backups unchanged. Added regression tests are pending CI because local Gradle distribution download failed. SQL trigger checks and whitespace passed. Source-only publication uses skip-ci; next authorized APK is intended to test update over the first permanent-key install plus sync with the user's actual library. Existing 64 MiB decoded/8 MiB compressed bounds remain; a large changed-state library may still need batched sync.
