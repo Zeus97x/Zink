@@ -1,6 +1,6 @@
 # ZInk approved bolt + inkwell logo — Claude build handoff
 
-Status: artwork and runtime wiring implemented; Android build/device verification pending.
+Status: artwork and runtime wiring implemented; signed CI build passed 2026-10-10 (Build Zink APK run 38015885987, release zink-38015885987-1, versionCode 1013, same signer as 1012); device verification pending.
 Branch: design/zink-bolt-inkwell. Base: master at 5fa043e1e5a92c0d9c84d42d6f715df6054c774b.
 User selected concept A: amber lightning striking an ivory inkwell, controlled splash, charcoal background. Use it for app launcher, startup/splash, settings and existing More/About branding. The comparison board was a design reference; production artwork is the editable SVG/vector rendition, with additional safe padding.
 
@@ -34,3 +34,9 @@ User selected concept A: amber lightning striking an ivory inkwell, controlled s
 - Trigger sync/backup notification; large icon matches and small icon is a white silhouette.
 
 Local verification: generated PNG/WebP outputs decoded and dimensions checked; XML parsed; SVG preview reviewed; whitespace checks passed. Android compilation pending Claude/CI. Two-device cloud sync confirmation remains pending separately.
+
+## Build result (2026-10-10)
+
+- Fixed import order in LogoHeader.kt and SettingsMainScreen.kt (commit b19168e).
+- Build Zink APK run https://github.com/Zeus97x/Zink/actions/runs/38015885987 succeeded (assembleDebug + JVM tests). Release: https://github.com/Zeus97x/Zink/releases/tag/zink-38015885987-1. Signer cert SHA-256 matches previous release; application ID unchanged; versionCode 1013.
+- PR CI spotlessCheck still red only on unrelated master files (see DEVELOPMENT_LOG.md). Device acceptance above still pending.
