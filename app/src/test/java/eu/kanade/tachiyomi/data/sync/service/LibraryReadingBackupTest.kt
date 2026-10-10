@@ -5,11 +5,11 @@ import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupChapter
 import eu.kanade.tachiyomi.data.backup.models.BackupHistory
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
+import kotlinx.serialization.protobuf.ProtoBuf
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import kotlinx.serialization.protobuf.ProtoBuf
 
 class LibraryReadingBackupTest {
     @Test
@@ -41,16 +41,24 @@ class LibraryReadingBackupTest {
 
     @Test
     fun newerUnreadStateWinsAndHistoryMergingIsIdempotent() {
-        val local = Backup(listOf(BackupManga(
-            source = 1, url = "/series", favorite = true, favoriteModifiedAt = 10,
-            chapters = listOf(BackupChapter("/chapter", "Chapter", read = true, lastPageRead = 20, version = 1)),
-            history = listOf(BackupHistory("/chapter", 100, 60)),
-        )))
-        val remote = Backup(listOf(BackupManga(
-            source = 1, url = "/series", favorite = false, favoriteModifiedAt = 20,
-            chapters = listOf(BackupChapter("/chapter", "Chapter", read = false, version = 2)),
-            history = listOf(BackupHistory("/chapter", 90, 70)),
-        )))
+        val local = Backup(
+            listOf(
+                BackupManga(
+                    source = 1, url = "/series", favorite = true, favoriteModifiedAt = 10,
+                    chapters = listOf(BackupChapter("/chapter", "Chapter", read = true, lastPageRead = 20, version = 1)),
+                    history = listOf(BackupHistory("/chapter", 100, 60)),
+                ),
+            ),
+        )
+        val remote = Backup(
+            listOf(
+                BackupManga(
+                    source = 1, url = "/series", favorite = false, favoriteModifiedAt = 20,
+                    chapters = listOf(BackupChapter("/chapter", "Chapter", read = false, version = 2)),
+                    history = listOf(BackupHistory("/chapter", 90, 70)),
+                ),
+            ),
+        )
         val merged = LibraryReadingBackup.merge(local, remote)
         val manga = merged.backupManga.single()
         assertFalse(manga.favorite)
@@ -60,20 +68,25 @@ class LibraryReadingBackupTest {
         assertEquals(manga.history, LibraryReadingBackup.merge(merged, remote).backupManga.single().history)
         assertTrue(local.backupManga.single().chapters.single().read)
     }
+
     @Test
     fun omitsUntouchedUnreadCatalogueButKeepsResetsAndHistory() {
-        val original = Backup(listOf(BackupManga(
-            source = 1, url = "/series", description = "Large source description",
-            chapters = listOf(
-                BackupChapter("/untouched", "Untouched"),
-                BackupChapter("/read", "Read", read = true),
-                BackupChapter("/progress", "Progress", lastPageRead = 3),
-                BackupChapter("/reset", "Reset", version = 2),
-                BackupChapter("/legacy-reset", "Legacy reset", lastModifiedAt = 100),
-                BackupChapter("/history", "History"),
+        val original = Backup(
+            listOf(
+                BackupManga(
+                    source = 1, url = "/series", description = "Large source description",
+                    chapters = listOf(
+                        BackupChapter("/untouched", "Untouched"),
+                        BackupChapter("/read", "Read", read = true),
+                        BackupChapter("/progress", "Progress", lastPageRead = 3),
+                        BackupChapter("/reset", "Reset", version = 2),
+                        BackupChapter("/legacy-reset", "Legacy reset", lastModifiedAt = 100),
+                        BackupChapter("/history", "History"),
+                    ),
+                    history = listOf(BackupHistory("/history", 123, 60)),
+                ),
             ),
-            history = listOf(BackupHistory("/history", 123, 60)),
-        )))
+        )
         val compact = LibraryReadingBackup.restrict(original)
         assertEquals(
             listOf("/read", "/progress", "/reset", "/legacy-reset", "/history"),
@@ -86,10 +99,14 @@ class LibraryReadingBackupTest {
 
     @Test
     fun compactionKeepsLibraryTitlesEvenWithoutReadingState() {
-        val original = Backup(listOf(BackupManga(
-            source = 1, url = "/unread-series", title = "Unread series", favorite = true,
-            chapters = (1..10000).map { BackupChapter("/chapter/$it", "Chapter $it") },
-        )))
+        val original = Backup(
+            listOf(
+                BackupManga(
+                    source = 1, url = "/unread-series", title = "Unread series", favorite = true,
+                    chapters = (1..10000).map { BackupChapter("/chapter/$it", "Chapter $it") },
+                ),
+            ),
+        )
         val compact = LibraryReadingBackup.restrict(original)
         assertTrue(compact.backupManga.single().favorite)
         assertEquals("Unread series", compact.backupManga.single().title)
@@ -103,18 +120,28 @@ class LibraryReadingBackupTest {
 
     @Test
     fun sparseSnapshotStillPropagatesNewerUnreadReset() {
-        val local = Backup(listOf(BackupManga(
-            source = 1, url = "/series",
-            chapters = listOf(BackupChapter("/chapter", "Chapter", read = true, version = 1)),
-        )))
-        val remote = Backup(listOf(BackupManga(
-            source = 1, url = "/series",
-            chapters = listOf(BackupChapter("/chapter", "Chapter", version = 2)),
-        )))
+        val local = Backup(
+            listOf(
+                BackupManga(
+                    source = 1, url = "/series",
+                    chapters = listOf(BackupChapter("/chapter", "Chapter", read = true, version = 1)),
+                ),
+            ),
+        )
+        val remote = Backup(
+            listOf(
+                BackupManga(
+                    source = 1, url = "/series",
+                    chapters = listOf(BackupChapter("/chapter", "Chapter", version = 2)),
+                ),
+            ),
+        )
         val merged = LibraryReadingBackup.merge(local, remote)
         assertFalse(merged.backupManga.single().chapters.single().read)
         assertEquals(2L, merged.backupManga.single().chapters.single().version)
-        assertEquals(merged.backupManga.single().chapters.map { it.url },
-            LibraryReadingBackup.restrict(merged).backupManga.single().chapters.map { it.url })
+        assertEquals(
+            merged.backupManga.single().chapters.map { it.url },
+            LibraryReadingBackup.restrict(merged).backupManga.single().chapters.map { it.url },
+        )
     }
 }

@@ -95,9 +95,11 @@ class ZAppsAccount(private val preferences: SyncPreferences) {
 
     companion object {
         const val URL = "https://sihbduemrgwqdznkxykx.supabase.co"
+
         // Public client key, scoped by authenticated owner RLS. Never use a secret/service key here.
         const val PUBLISHABLE_KEY = "sb_publishable_jrw7-adGzT_mwZctDRwVnQ_faWEyuF9"
         private val sessionMutex = Mutex()
+
         // Dedicated client avoids the app's debug header logger exposing bearer tokens.
         val client = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)

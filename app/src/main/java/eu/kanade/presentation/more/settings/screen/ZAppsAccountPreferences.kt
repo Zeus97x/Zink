@@ -125,24 +125,28 @@ internal fun getZAppsAccountPreferences(syncPreferences: SyncPreferences): List<
             enabled = !busy,
             onClick = { showSignIn = true },
         ),
-    ) + if (session != null) listOf(
-        Preference.PreferenceItem.TextPreference(
-            title = stringResource(MR.strings.zink_zapps_sign_out),
-            enabled = !busy,
-            onClick = {
-                busy = true
-                scope.launch {
-                    try {
-                        account.signOut()
-                    } catch (e: Exception) {
-                        if (e is CancellationException) throw e
-                        context.toast("Signed out locally. The server could not be reached.")
-                    } finally {
-                        SyncDataJob.setupTask(context)
-                        busy = false
+    ) + if (session != null) {
+        listOf(
+            Preference.PreferenceItem.TextPreference(
+                title = stringResource(MR.strings.zink_zapps_sign_out),
+                enabled = !busy,
+                onClick = {
+                    busy = true
+                    scope.launch {
+                        try {
+                            account.signOut()
+                        } catch (e: Exception) {
+                            if (e is CancellationException) throw e
+                            context.toast("Signed out locally. The server could not be reached.")
+                        } finally {
+                            SyncDataJob.setupTask(context)
+                            busy = false
+                        }
                     }
-                }
-            },
-        ),
-    ) else emptyList()
+                },
+            ),
+        )
+    } else {
+        emptyList()
+    }
 }

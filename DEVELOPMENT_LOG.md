@@ -194,3 +194,41 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 
 - User explicitly requests building the published sync fix and testing the permanent signing setup. Base master is 65bbd48d3bd28d382294dd6543358a2324256031. Workflow comment-only change triggers one new master build; signing configuration/key and increasing run-number versionCode remain unchanged.
 - GitHub CI will compile the APK and run JVM tests, including compact snapshot regression cases. Results are pending. User will install this APK over the first permanently signed APK and confirm retained library/settings and actual cloud sync. No claim of successful update compatibility before the phone test.
+
+## 2026-10-09 — Approved bolt + inkwell logo PR
+
+- Request: redesign tacky logo, user selected A (lightning into inkwell); apply to launcher, loading/splash and settings branding. Prepare separate PR and Claude build command.
+- Implemented editable amber/ivory mark on charcoal with safe padding, Android colour/themed/notification vectors, both main/debug legacy launcher rasters and splash/web rasters. More/About reuse shared LogoHeader with charcoal badge for light themes; Settings adds the shared header and adjusts two-pane row scroll offset. Adaptive launcher and splash references already point to the shared vector.
+- Paths: artwork/zink-{icon.svg,mark.svg,icon-preview.png}; scripts/artwork/generate_zink_icons.py; app/src/{main,debug}/res/mipmap-*/ic_launcher*.png; main drawable-*/splash_icon.webp; main/ic_launcher-web.png; main drawable/{ic_zink_logo,ic_zink_monochrome_launcher,ic_tachi,ic_launcher_foreground}.xml; debug drawable/ic_launcher_foreground.xml; presentation/more/{LogoHeader.kt,settings/screen/SettingsMainScreen.kt}; docs/ai/tasks/zink-logo-refresh/HANDOFF.md; docs/{CODEX_HANDOFF,ZINK_PHASES}.md; DEVELOPMENT_LOG.md.
+- Verification: vector XML parse, raster decoding/dimensions and rendered SVG visual review; git diff --check. No Android build executed; compilation and device appearance/update checks delegated to Claude. Existing signing workflow and secrets preserved. Source publication is on design/zink-bolt-inkwell, not master; no merge or build requested of ChatGPT.
+- Next: Claude builds this branch using existing permanently signed Actions workflow and checks approved placement. User confirms two-device sync separately; update-over-install reported successful on current APK.
+
+## 2026-10-10 — Claude build of logo PR #2 (design/zink-bolt-inkwell)
+
+- Status: in progress — branch review done, signed APK build dispatched; results recorded in a follow-up entry.
+- Request: review the bolt + inkwell integration, run the existing Build Zink APK workflow on this branch with the current signing secrets, fix failures on the same branch, report the signed APK/release. Do not merge PR #2. Preserve application ID eu.kanade.tachiyomi.sy.debug and the permanent signing key.
+- Review: all launcher/splash/notification vectors share the same 108-viewport paths with 0.9 safe-area group; monochrome and notification variants use white silhouettes. Settings two-pane offset `+3` matches the new logo item plus the two existing utility rows. Found two import-order problems that `spotlessCheck` (PR CI) would reject.
+- Fix: moved `RoundedCornerShape` import below `layout.*` in `LogoHeader.kt`; moved `eu.kanade.presentation.more.LogoHeader` import into the `eu.kanade` block in `SettingsMainScreen.kt`. No behaviour change.
+- Paths: app/src/main/java/eu/kanade/presentation/more/LogoHeader.kt; app/src/main/java/eu/kanade/presentation/more/settings/screen/SettingsMainScreen.kt; DEVELOPMENT_LOG.md.
+- Verification: source review only in this commit; local Gradle unavailable in this environment. Workflow and signing configuration unchanged.
+
+## 2026-10-10 — Logo PR #2 signed APK build result
+
+- Status: build implemented and verified in CI; device acceptance pending (user).
+- Build: Build Zink APK workflow_dispatch on design/zink-bolt-inkwell at b19168e3483e466236546469fc9077e8243c0c8e — run [38015885987](https://github.com/Zeus97x/Zink/actions/runs/38015885987) (run #13), conclusion success in 3m01s. `:app:assembleDebug :app:testDebugUnitTest` passed; signing key restored from the existing four secrets (names only: SIGNING_KEYSTORE_BASE64, SIGNING_STORE_PASSWORD, SIGNING_KEY_ALIAS, SIGNING_KEY_PASSWORD); ZINK_VERSION_CODE=1013.
+- Outputs: artifact `Zink` id 11656236755; release [zink-38015885987-1](https://github.com/Zeus97x/Zink/releases/tag/zink-38015885987-1), asset Zink.apk 112,954,687 bytes. The release is a normal (non-draft) GitHub release created by the existing workflow from a non-master commit.
+- Update-compatibility check (performed offline on downloaded APKs): APK Signature Scheme v2 signer certificate SHA-256 `7dcdeaf250980cf17e6cdbd8b65c4b68eb18fcf757268ae0c69aa598b4dbc611` is identical for this APK and the previous master release zink-37949162101-1 (run #12, versionCode 1012). Manifest contains application ID eu.kanade.tachiyomi.sy.debug. VersionCode increases 1012 → 1013. No signing, workflow or application ID change.
+- PR CI (`CI` / build_check.yml, run 38015887176): still fails at `:app:spotlessKotlinCheck`, but only on files that come from master and are not touched by this PR (LibraryToolsScreen.kt, ZAppsAccountPreferences.kt, UpdatesUiItem.kt, BackupCreator.kt, SyncManager.kt, SupabaseSyncService.kt, ZAppsAccount.kt, LibraryTab.kt, LibraryReadingBackupTest.kt). The logo files no longer appear after the import-order fix. Not fixed here to keep PR #2 scoped; fix separately with `./gradlew spotlessApply` on master (local Gradle unavailable in this session: Maven Central HTTP 429).
+- Not verified: launcher masks, splash, More/About/Settings appearance, light/dark, two-pane scroll, notification icons and update-over-install on device. PR #2 not merged.
+- Next: user installs release APK over current signed app and runs the HANDOFF device acceptance list; separately run spotlessApply on master to green PR CI.
+
+## 2026-10-10 — Format pre-existing master files so PR CI spotlessCheck passes
+
+- Status: implemented; PR CI result recorded below once available.
+- Request: user asked to fix the spotless failure on PR #2 before merging and downloading the master build.
+- Cause: nine Kotlin files added/changed by earlier sync, backup, library and updates work were pushed directly to master, where only Build Zink APK runs (no spotlessCheck). PR #2 was the first pull request to run `CI` (build_check.yml: `spotlessCheck assembleDebug`).
+- Fix: ran standalone ktlint 1.8.0 (same version as `ktlint` in gradle/libs.versions.toml, used by PluginSpotless) with the repo `.editorconfig` in `-F` mode on exactly the nine flagged files. Formatting only: import ordering, braces on multiline if/else expressions, continuation indent, blank lines. No behaviour change.
+- Paths: app/src/main/java/eu/kanade/presentation/library/LibraryToolsScreen.kt; app/src/main/java/eu/kanade/presentation/more/settings/screen/ZAppsAccountPreferences.kt; app/src/main/java/eu/kanade/presentation/updates/UpdatesUiItem.kt; app/src/main/java/eu/kanade/tachiyomi/data/backup/create/BackupCreator.kt; app/src/main/java/eu/kanade/tachiyomi/data/sync/SyncManager.kt; app/src/main/java/eu/kanade/tachiyomi/data/sync/service/SupabaseSyncService.kt; app/src/main/java/eu/kanade/tachiyomi/data/sync/service/ZAppsAccount.kt; app/src/main/java/eu/kanade/tachiyomi/ui/library/LibraryTab.kt; app/src/test/java/eu/kanade/tachiyomi/data/sync/service/LibraryReadingBackupTest.kt; DEVELOPMENT_LOG.md.
+- Verification: `ktlint "src/**/*.kt"` in app/ reports no violations after the fix. Local Gradle spotlessCheck/compile still impossible here (Maven Central HTTP 429); PR CI is the authoritative check.
+- Next: confirm PR CI green, then user merges PR #2; master push triggers Build Zink APK and a new signed release (versionCode > 1013).
+- Result: PR CI run [38016385924](https://github.com/Zeus97x/Zink/actions/runs/38016385924) on 9ca9fb0aea07dda8effb49ee49ef76c29bcf27b1 — success (spotlessCheck + assembleDebug). PR #2 ready for the user to merge; not merged by Claude.
