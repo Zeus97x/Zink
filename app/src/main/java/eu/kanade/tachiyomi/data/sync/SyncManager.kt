@@ -2,8 +2,8 @@ package eu.kanade.tachiyomi.data.sync
 
 import android.content.Context
 import android.net.Uri
-import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import app.cash.sqldelight.async.coroutines.awaitAsList
+import app.cash.sqldelight.async.coroutines.awaitAsOneOrNull
 import eu.kanade.domain.sync.SyncPreferences
 import eu.kanade.tachiyomi.data.backup.create.BackupCreator
 import eu.kanade.tachiyomi.data.backup.create.BackupOptions
@@ -13,8 +13,8 @@ import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.restore.BackupRestoreJob
 import eu.kanade.tachiyomi.data.backup.restore.RestoreOptions
 import eu.kanade.tachiyomi.data.backup.restore.restorers.MangaRestorer
-import eu.kanade.tachiyomi.data.sync.service.SyncData
 import eu.kanade.tachiyomi.data.sync.service.SupabaseSyncService
+import eu.kanade.tachiyomi.data.sync.service.SyncData
 import eu.kanade.tachiyomi.data.sync.service.SyncYomiSyncService
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.protobuf.ProtoBuf
@@ -83,7 +83,9 @@ class SyncManager(
         val databaseManga = getAllMangaThatNeedsSync().let { mangas ->
             if (syncPreferences.syncService.get() == SyncService.SUPABASE.value) {
                 database.mangasQueries.getLibraryReadingSyncManga(::mapManga).awaitAsList()
-            } else mangas
+            } else {
+                mangas
+            }
         }
 
         val backupOptions = BackupOptions(

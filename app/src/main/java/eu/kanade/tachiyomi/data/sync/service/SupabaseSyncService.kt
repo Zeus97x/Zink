@@ -89,5 +89,4 @@ class SupabaseSyncService(context: Context, json: Json, syncPreferences: SyncPre
             }
         }
     }
-
 }

@@ -35,14 +35,14 @@ import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.icerock.moko.resources.StringResource
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.manga.components.MangaCover
 import eu.kanade.presentation.util.Screen
-import dev.icerock.moko.resources.StringResource
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import mihon.feature.migration.config.MigrationConfigScreen
 import tachiyomi.domain.library.model.LibraryManga
