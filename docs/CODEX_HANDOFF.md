@@ -94,3 +94,7 @@ October 9: user confirms entering four signing secrets and authorizes publicatio
 ## Sync size fix — prepared October 9
 
 Cloud whitelist now omits untouched unread catalogue chapters while retaining read/progress, versioned/timestamped unread resets and history references. Descriptions and chapter scanlator/fetch/upload dates stay local. Existing snapshots remain compatible. Local backups unchanged. Added regression tests are pending CI because local Gradle distribution download failed. SQL trigger checks and whitespace passed. Source-only publication uses skip-ci; next authorized APK is intended to test update over the first permanent-key install plus sync with the user's actual library. Existing 64 MiB decoded/8 MiB compressed bounds remain; a large changed-state library may still need batched sync.
+
+## October 9 logo redesign PR
+
+User approved bolt + inkwell concept A. Artwork/runtime resources and Settings header are implemented on design/zink-bolt-inkwell; Claude build and device verification pending. See docs/ai/tasks/zink-logo-refresh/HANDOFF.md for exact placement/build steps. Do not merge automatically or replace permanent signing key. Current APK update-over-install was reported successful; cross-device sync still awaits user test.

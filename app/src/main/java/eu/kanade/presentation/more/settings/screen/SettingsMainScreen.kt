@@ -48,6 +48,7 @@ import eu.kanade.presentation.util.Screen
 import exh.assets.EhAssets
 import exh.assets.ehassets.EhLogo
 import exh.assets.ehassets.MangadexLogo
+import eu.kanade.presentation.more.LogoHeader
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -114,7 +115,7 @@ object SettingsMainScreen : Screen() {
                     items.indexOfFirst { it.screen::class == navigator.items.first()::class }
                         .also {
                             LaunchedEffect(Unit) {
-                                if (it >= 0) state.animateScrollToItem(it + 2)
+                                if (it >= 0) state.animateScrollToItem(it + 3)
                                 if (it > 0) {
                                     // Lift scroll
                                     topBarState.contentOffset = topBarState.heightOffsetLimit
@@ -129,6 +130,7 @@ object SettingsMainScreen : Screen() {
                     state = state,
                     contentPadding = contentPadding,
                 ) {
+                    item(key = "zink_logo") { LogoHeader() }
                     item {
                         TextPreferenceWidget(
                             title = stringResource(MR.strings.action_migrate),

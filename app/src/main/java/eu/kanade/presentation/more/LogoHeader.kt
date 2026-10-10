@@ -1,5 +1,7 @@
 package eu.kanade.presentation.more
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,7 +31,8 @@ fun LogoHeader() {
             tint = Color.Unspecified,
             modifier = Modifier
                 .padding(top = 40.dp, bottom = 16.dp)
-                .size(64.dp),
+                .size(64.dp)
+                .background(Color(0xFF202124), RoundedCornerShape(16.dp)),
         )
 
         Text(
