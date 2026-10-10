@@ -41,6 +41,7 @@ import dev.icerock.moko.resources.StringResource
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.library.LibraryToolsScreen
+import eu.kanade.presentation.more.LogoHeader
 import eu.kanade.presentation.more.settings.screen.about.AboutScreen
 import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
@@ -48,7 +49,6 @@ import eu.kanade.presentation.util.Screen
 import exh.assets.EhAssets
 import exh.assets.ehassets.EhLogo
 import exh.assets.ehassets.MangadexLogo
-import eu.kanade.presentation.more.LogoHeader
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.material.Scaffold

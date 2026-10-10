@@ -202,3 +202,12 @@ Copy this template for a new dated entry; replace every placeholder with facts.
 - Paths: artwork/zink-{icon.svg,mark.svg,icon-preview.png}; scripts/artwork/generate_zink_icons.py; app/src/{main,debug}/res/mipmap-*/ic_launcher*.png; main drawable-*/splash_icon.webp; main/ic_launcher-web.png; main drawable/{ic_zink_logo,ic_zink_monochrome_launcher,ic_tachi,ic_launcher_foreground}.xml; debug drawable/ic_launcher_foreground.xml; presentation/more/{LogoHeader.kt,settings/screen/SettingsMainScreen.kt}; docs/ai/tasks/zink-logo-refresh/HANDOFF.md; docs/{CODEX_HANDOFF,ZINK_PHASES}.md; DEVELOPMENT_LOG.md.
 - Verification: vector XML parse, raster decoding/dimensions and rendered SVG visual review; git diff --check. No Android build executed; compilation and device appearance/update checks delegated to Claude. Existing signing workflow and secrets preserved. Source publication is on design/zink-bolt-inkwell, not master; no merge or build requested of ChatGPT.
 - Next: Claude builds this branch using existing permanently signed Actions workflow and checks approved placement. User confirms two-device sync separately; update-over-install reported successful on current APK.
+
+## 2026-10-10 — Claude build of logo PR #2 (design/zink-bolt-inkwell)
+
+- Status: in progress — branch review done, signed APK build dispatched; results recorded in a follow-up entry.
+- Request: review the bolt + inkwell integration, run the existing Build Zink APK workflow on this branch with the current signing secrets, fix failures on the same branch, report the signed APK/release. Do not merge PR #2. Preserve application ID eu.kanade.tachiyomi.sy.debug and the permanent signing key.
+- Review: all launcher/splash/notification vectors share the same 108-viewport paths with 0.9 safe-area group; monochrome and notification variants use white silhouettes. Settings two-pane offset `+3` matches the new logo item plus the two existing utility rows. Found two import-order problems that `spotlessCheck` (PR CI) would reject.
+- Fix: moved `RoundedCornerShape` import below `layout.*` in `LogoHeader.kt`; moved `eu.kanade.presentation.more.LogoHeader` import into the `eu.kanade` block in `SettingsMainScreen.kt`. No behaviour change.
+- Paths: app/src/main/java/eu/kanade/presentation/more/LogoHeader.kt; app/src/main/java/eu/kanade/presentation/more/settings/screen/SettingsMainScreen.kt; DEVELOPMENT_LOG.md.
+- Verification: source review only in this commit; local Gradle unavailable in this environment. Workflow and signing configuration unchanged.
